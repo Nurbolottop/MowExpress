@@ -3,7 +3,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>{% block title %}CRM{% endblock %} | {{ site_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/crm.css' %}">
@@ -11,7 +14,21 @@
 </head>
 <body>
     <div class="crm-layout">
-        <aside class="crm-sidebar">
+        <!-- Mobile Header -->
+        <header class="crm-mobile-header">
+            <button class="crm-mobile-menu-toggle" id="mobileMenuToggle" aria-label="Открыть меню">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="crm-mobile-logo">{{ site_name }} CRM</div>
+            <div class="crm-mobile-avatar">{{ request.user.username|make_list|first }}</div>
+        </header>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div class="crm-sidebar-overlay" id="sidebarOverlay"></div>
+
+        <aside class="crm-sidebar" id="crmSidebar">
             <a href="{% url 'manager_dashboard' %}" class="crm-sidebar-logo">{{ site_name }} CRM</a>
 
             <div class="crm-sidebar-section">
@@ -48,6 +65,8 @@
             <div class="crm-sidebar-footer">
                 <a href="{% url 'manager_profile' %}"><span class="nav-icon">&#9881;</span> {{ request.user.username }}</a>
             </div>
+            <!-- Mobile Close Button -->
+            <button class="crm-sidebar-close" id="sidebarClose" aria-label="Закрыть меню">&times;</button>
         </aside>
 
         <main class="crm-main">
@@ -78,5 +97,44 @@
     </div>
 
     {% block extra_js %}{% endblock %}
+
+    <!-- Mobile Menu Script -->
+    <script>
+        (function() {
+            const toggle = document.getElementById('mobileMenuToggle');
+            const sidebar = document.getElementById('crmSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const close = document.getElementById('sidebarClose');
+
+            function openMenu() {
+                sidebar.classList.add('is-open');
+                overlay.classList.add('is-visible');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMenu() {
+                sidebar.classList.remove('is-open');
+                overlay.classList.remove('is-visible');
+                document.body.style.overflow = '';
+            }
+
+            if (toggle) toggle.addEventListener('click', openMenu);
+            if (close) close.addEventListener('click', closeMenu);
+            if (overlay) overlay.addEventListener('click', closeMenu);
+
+            // Close on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeMenu();
+            });
+
+            // Close sidebar when clicking on a link (mobile)
+            const navLinks = sidebar.querySelectorAll('a');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 1024) closeMenu();
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

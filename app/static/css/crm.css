@@ -862,39 +862,247 @@ body {
     background: var(--crm-primary-hover);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ============================================
+   MOBILE HEADER & NAVIGATION
+   ============================================ */
+
+/* Mobile Header (hidden on desktop) */
+.crm-mobile-header {
+    display: none;
+}
+
+/* Mobile Sidebar Close Button */
+.crm-sidebar-close {
+    display: none;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.15s;
+}
+
+.crm-sidebar-close:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* Sidebar Overlay */
+.crm-sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.crm-sidebar-overlay.is-visible {
+    opacity: 1;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Large Tablets & Small Laptops (1024px and below) */
+@media (max-width: 1024px) {
     .crm-sidebar {
-        display: none;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .crm-sidebar.is-open {
+        transform: translateX(0);
+    }
+
+    .crm-sidebar-overlay {
+        display: block;
+    }
+
+    .crm-sidebar-close {
+        display: block;
     }
 
     .crm-main {
         margin-left: 0;
     }
 
+    .crm-mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--crm-card);
+        border-bottom: 1px solid var(--crm-border);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        height: 56px;
+    }
+
+    .crm-mobile-menu-toggle {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .crm-mobile-menu-toggle span {
+        display: block;
+        width: 24px;
+        height: 2px;
+        background: var(--crm-text);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .crm-mobile-logo {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--crm-text);
+    }
+
+    .crm-mobile-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--crm-primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .crm-topbar {
+        display: none;
+    }
+
     .crm-content {
         padding: 1rem;
     }
 
-    .crm-topbar {
-        padding: 0 1rem;
+    /* Touch-friendly buttons */
+    .crm-btn {
+        min-height: 44px;
+        padding: 0.65rem 1rem;
     }
 
+    .crm-btn-sm {
+        min-height: 36px;
+        padding: 0.4rem 0.75rem;
+    }
+
+    /* Tables horizontal scroll */
+    .crm-table-wrap {
+        margin: 0 -1rem;
+        padding: 0 1rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .crm-table {
+        min-width: 800px;
+    }
+
+    /* Cards */
+    .crm-card {
+        padding: 1rem;
+    }
+
+    .crm-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    /* Stats grid */
     .crm-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .crm-stat-card {
+        padding: 1rem;
+    }
+
+    .crm-stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .crm-stat-value {
+        font-size: 1.3rem;
+    }
+
+    /* Order cards */
+    .crm-order-grid {
         grid-template-columns: 1fr;
     }
 
+    .crm-order-card {
+        padding: 1rem;
+    }
+
+    .crm-order-body {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    /* Forms */
     .crm-form-row {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 
+    .crm-form-group {
+        margin-bottom: 1rem;
+    }
+
+    .crm-form-input,
+    .crm-form-select,
+    .crm-form-textarea {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        padding: 0.75rem;
+    }
+
+    /* Detail grid */
     .crm-detail-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
     }
 
+    /* Builder */
     .crm-builder-grid-items,
     .crm-builder-grid-expenses {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .crm-builder-row {
+        padding: 0.75rem;
     }
 
     .crm-create-hero,
@@ -902,10 +1110,223 @@ body {
     .crm-create-section-head {
         flex-direction: column;
         align-items: stretch;
+        gap: 0.75rem;
     }
 
     .crm-create-base-grid {
         grid-template-columns: 1fr;
+    }
+
+    .crm-create-section-body {
+        padding: 1rem;
+    }
+
+    /* Filter bar */
+    .crm-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .crm-filter-bar .crm-form-input,
+    .crm-filter-bar .crm-form-select {
+        width: 100%;
+        min-width: auto;
+    }
+
+    /* Timeline */
+    .crm-timeline {
+        padding-left: 1.25rem;
+    }
+
+    .crm-timeline-dot {
+        left: -1.25rem;
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* Tablets (768px and below) */
+@media (max-width: 768px) {
+    .crm-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-order-body {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-order-actions {
+        flex-direction: column;
+    }
+
+    .crm-order-actions .crm-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Login */
+    .crm-login-wrapper {
+        padding: 1rem;
+    }
+
+    .crm-login-card {
+        padding: 1.5rem;
+    }
+}
+
+/* Small Phones (480px and below) */
+@media (max-width: 480px) {
+    /* Safe area support for iPhone notch */
+    .crm-mobile-header {
+        padding: 0.6rem 0.75rem;
+        padding-top: max(0.6rem, env(safe-area-inset-top));
+        padding-left: max(0.75rem, env(safe-area-inset-left));
+        padding-right: max(0.75rem, env(safe-area-inset-right));
+        height: calc(52px + env(safe-area-inset-top));
+    }
+
+    .crm-mobile-logo {
+        font-size: 1rem;
+    }
+
+    .crm-content {
+        padding: 0.75rem;
+    }
+
+    .crm-card {
+        padding: 0.875rem;
+        border-radius: 8px;
+    }
+
+    .crm-card-title {
+        font-size: 0.95rem;
+    }
+
+    /* Even more compact stats */
+    .crm-stat-card {
+        padding: 0.875rem;
+        gap: 0.75rem;
+    }
+
+    .crm-stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .crm-stat-value {
+        font-size: 1.1rem;
+    }
+
+    .crm-stat-label {
+        font-size: 0.7rem;
+    }
+
+    /* Compact buttons */
+    .crm-btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.85rem;
+    }
+
+    .crm-btn-lg {
+        padding: 0.75rem 1.25rem;
+    }
+
+    /* Compact badges */
+    .crm-badge {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.7rem;
+    }
+
+    /* Smaller form labels */
+    .crm-form-label {
+        font-size: 0.8rem;
+    }
+
+    /* Tables even more compact */
+    .crm-table-wrap {
+        margin: 0 -0.75rem;
+        padding: 0 0.75rem;
+    }
+
+    .crm-table {
+        font-size: 0.8rem;
+    }
+
+    .crm-table thead th,
+    .crm-table tbody td {
+        padding: 0.5rem 0.6rem;
+    }
+
+    /* Order card compact */
+    .crm-order-card {
+        padding: 0.875rem;
+    }
+
+    .crm-order-field .o-label {
+        font-size: 0.65rem;
+    }
+
+    .crm-order-field .o-value {
+        font-size: 0.85rem;
+    }
+
+    /* Timeline compact */
+    .crm-timeline {
+        padding-left: 1rem;
+    }
+
+    .crm-timeline::before {
+        left: 0.25rem;
+    }
+
+    .crm-timeline-dot {
+        left: -0.875rem;
+        width: 8px;
+        height: 8px;
+    }
+
+    .crm-timeline-date {
+        font-size: 0.7rem;
+    }
+
+    .crm-timeline-text {
+        font-size: 0.85rem;
+    }
+
+    /* Create actions sticky bottom with safe area */
+    .crm-create-actions {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        padding: 0.75rem;
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+        z-index: 40;
+    }
+
+    /* Add padding to content to prevent overlap with sticky actions */
+    .crm-create-form {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+
+    /* Safe area for main content bottom */
+    .crm-content {
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
+
+    /* Safe area for sidebar overlay button on small phones */
+    .crm-sidebar-close {
+        top: max(1rem, env(safe-area-inset-top));
+        right: max(1rem, env(safe-area-inset-right));
     }
 }
 
@@ -1003,6 +1424,8 @@ body {
 @media print {
     .crm-sidebar,
     .crm-topbar,
+    .crm-mobile-header,
+    .crm-sidebar-overlay,
     .crm-btn,
     .no-print {
         display: none !important;
@@ -1019,5 +1442,9 @@ body {
     .crm-card {
         box-shadow: none;
         border: none;
+    }
+
+    body {
+        background: white;
     }
 }
