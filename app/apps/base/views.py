@@ -48,6 +48,32 @@ def _is_manager(user):
     return user.is_authenticated and user.is_staff
 
 
+STATUS_FLOW = [
+    ShipmentStatus.SENT,
+    ShipmentStatus.IN_TRANSIT,
+    ShipmentStatus.RECEIVED,
+    ShipmentStatus.ISSUED,
+]
+
+
+def _get_status_steps(current_status):
+    status_labels = dict(ShipmentStatus.choices)
+    try:
+        current_index = STATUS_FLOW.index(current_status)
+    except ValueError:
+        current_index = 0
+
+    steps = []
+    for idx, status_code in enumerate(STATUS_FLOW):
+        steps.append({
+            'code': status_code,
+            'label': status_labels.get(status_code, status_code),
+            'is_done': idx < current_index,
+            'is_current': idx == current_index,
+        })
+    return steps, current_index
+
+
 # ---------------------------------------------------------------------------
 # Dashboard
 # ---------------------------------------------------------------------------
@@ -185,11 +211,14 @@ def manager_shipment_detail_view(request, pk):
         Shipment.objects.select_related('client').prefetch_related('items', 'expenses'), pk=pk
     )
     history = shipment.history.select_related('changed_by').order_by('-changed_at')
+    status_steps, current_index = _get_status_steps(shipment.status)
 
     return render(request, 'crm/shipment_detail.html', {
         'active_page': 'shipments',
         'shipment': shipment,
         'history': history,
+        'status_steps': status_steps,
+        'next_status_steps': status_steps[current_index + 1:],
     })
 
 
@@ -432,6 +461,34 @@ def manager_shipment_status_view(request, pk):
         'shipment': shipment,
         'form': form,
     })
+
+
+@user_passes_test(_is_manager, login_url='manager_login')
+def manager_shipment_status_quick_update_view(request, pk):
+    if request.method != 'POST':
+        return redirect('manager_shipment_detail', pk=pk)
+
+    shipment = get_object_or_404(Shipment.objects.select_related('client'), pk=pk)
+    new_status = request.POST.get('status')
+    status_steps, current_index = _get_status_steps(shipment.status)
+    allowed_statuses = [step['code'] for step in status_steps[current_index + 1:]]
+
+    if new_status not in allowed_statuses:
+        messages.error(request, 'Можно выбрать только следующий этап процесса.')
+        return redirect('manager_shipment_detail', pk=shipment.pk)
+
+    old_status = shipment.status
+    shipment.status = new_status
+    shipment.save(update_fields=['status', 'updated_at'])
+
+    ShipmentStatusHistory.objects.create(
+        shipment=shipment,
+        old_status=old_status,
+        new_status=new_status,
+        changed_by=request.user,
+    )
+    messages.success(request, f'Статус обновлён: {shipment.get_status_display()}.')
+    return redirect('manager_shipment_detail', pk=shipment.pk)
 
 
 from django.urls import reverse

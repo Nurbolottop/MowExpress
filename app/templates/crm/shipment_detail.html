@@ -3,6 +3,30 @@
 {% block title %}Заказ #{{ shipment.id }}{% endblock %}
 {% block page_title %}Карточка заказа #{{ shipment.id }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .status-step-chip {
+        padding: 0.3rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        border: 1px solid var(--crm-border);
+        background: #f1f5f9;
+        color: #475569;
+    }
+    .status-step-chip.is-current {
+        background: #dbeafe;
+        border-color: #93c5fd;
+        color: #1e40af;
+    }
+    .status-step-chip.is-done {
+        background: #dcfce7;
+        border-color: #86efac;
+        color: #166534;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="crm-card">
     <div class="crm-card-header">
@@ -12,10 +36,36 @@
         </div>
         <div style="display: flex; gap: 0.35rem; flex-wrap: nowrap; white-space: nowrap;">
             <a href="{% url 'manager_shipment_edit' shipment.id %}" class="crm-btn crm-btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;">&#9998; Редактировать</a>
-            <a href="{% url 'manager_shipment_status' shipment.id %}" class="crm-btn crm-btn-warning" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;">Статус</a>
             <a href="{% url 'manager_shipment_sticker' shipment.id %}" class="crm-btn crm-btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;" target="_blank">Самоклейка</a>
             <a href="{% url 'manager_shipment_print' shipment.id %}" class="crm-btn crm-btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;" target="_blank">Накладная</a>
             <a href="{% url 'manager_shipments' %}" class="crm-btn crm-btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;">&#8592; Заказы</a>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 1rem; padding: 0.9rem; border: 1px solid var(--crm-border); border-radius: 10px; background: #f8fafc;">
+        <div style="font-size: 0.82rem; color: var(--crm-text-light); margin-bottom: 0.55rem;">Процесс статуса</div>
+        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 0.7rem;">
+            {% for step in status_steps %}
+                <span class="status-step-chip{% if step.is_current %} is-current{% elif step.is_done %} is-done{% endif %}">
+                    {{ forloop.counter }}. {{ step.label }}
+                </span>
+            {% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; align-items: center;">
+            {% if next_status_steps %}
+                {% for step in next_status_steps %}
+                    <form method="post" action="{% url 'manager_shipment_status_quick' shipment.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="{{ step.code }}">
+                        <button type="submit" class="crm-btn crm-btn-warning" style="padding: 0.28rem 0.58rem; font-size: 0.74rem; min-height: auto;">
+                            → {{ step.label }}
+                        </button>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <span style="font-size: 0.82rem; color: var(--crm-success); font-weight: 600;">Процесс завершён</span>
+            {% endif %}
         </div>
     </div>
 

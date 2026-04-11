@@ -14,6 +14,7 @@ urlpatterns = [
     path('crm/shipments/<int:pk>/', views.manager_shipment_detail_view, name='manager_shipment_detail'),
     path('crm/shipments/<int:pk>/edit/', views.manager_shipment_edit_view, name='manager_shipment_edit'),
     path('crm/shipments/<int:pk>/status/', views.manager_shipment_status_view, name='manager_shipment_status'),
+    path('crm/shipments/<int:pk>/status/quick/', views.manager_shipment_status_quick_update_view, name='manager_shipment_status_quick'),
     path('crm/shipments/<int:pk>/print/', views.manager_shipment_print_view, name='manager_shipment_print'),
     path('crm/shipments/<int:pk>/sticker/', views.manager_shipment_sticker_view, name='manager_shipment_sticker'),
     path('crm/analytics/', views.manager_analytics_view, name='manager_analytics'),

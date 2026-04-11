@@ -42,7 +42,7 @@ services:
       redis_kgcargo:
         condition: service_started
     ports:
-      - "8000:8000"
+      - "8085:8000"
     networks:
       - portfolio_network_kgcargo
 
