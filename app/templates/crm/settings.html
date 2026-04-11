@@ -153,9 +153,9 @@
                        placeholder="∞ (пусто)">
                 <input type="number" name="tier_price[]" step="0.01" min="0"
                        value="{{ tier.price|unlocalize }}" placeholder="Например: 1500" required>
+                <input type="hidden" class="tier-hidden" name="tier_is_per_kg[]" value="{{ tier.is_per_kg|yesno:'1,0' }}">
                 <label class="tier-type-toggle">
-                    <input type="checkbox" name="tier_is_per_kg[]" value="1"
-                           {% if tier.is_per_kg %}checked{% endif %}>
+                    <input type="checkbox" class="tier-checkbox" {% if tier.is_per_kg %}checked{% endif %}>
                     За каждый кг
                 </label>
                 <button type="button" class="btn-remove-tier" onclick="this.parentElement.remove()">&times;</button>
@@ -165,8 +165,9 @@
                 <input type="number" name="tier_min_weight[]" step="0.01" min="0" value="0" placeholder="0">
                 <input type="number" name="tier_max_weight[]" step="0.01" min="0" placeholder="∞ (пусто)">
                 <input type="number" name="tier_price[]" step="0.01" min="0" placeholder="Например: 1500" required>
+                <input type="hidden" class="tier-hidden" name="tier_is_per_kg[]" value="0">
                 <label class="tier-type-toggle">
-                    <input type="checkbox" name="tier_is_per_kg[]" value="1">
+                    <input type="checkbox" class="tier-checkbox">
                     За каждый кг
                 </label>
                 <button type="button" class="btn-remove-tier" onclick="this.parentElement.remove()">&times;</button>
@@ -190,6 +191,16 @@
 </div>
 
 <script>
+document.querySelector('form').addEventListener('submit', function() {
+    document.querySelectorAll('.tier-row').forEach(function(row) {
+        var hidden = row.querySelector('.tier-hidden');
+        var checkbox = row.querySelector('.tier-checkbox');
+        if (hidden && checkbox) {
+            hidden.value = checkbox.checked ? '1' : '0';
+        }
+    });
+});
+
 document.getElementById('add-tier-btn').addEventListener('click', function() {
     var row = document.createElement('div');
     row.className = 'tier-row';
@@ -197,7 +208,8 @@ document.getElementById('add-tier-btn').addEventListener('click', function() {
         '<input type="number" name="tier_min_weight[]" step="0.01" min="0" placeholder="0">' +
         '<input type="number" name="tier_max_weight[]" step="0.01" min="0" placeholder="∞ (пусто)">' +
         '<input type="number" name="tier_price[]" step="0.01" min="0" placeholder="Например: 1500" required>' +
-        '<label class="tier-type-toggle"><input type="checkbox" name="tier_is_per_kg[]" value="1"> За каждый кг</label>' +
+        '<input type="hidden" class="tier-hidden" name="tier_is_per_kg[]" value="0">' +
+        '<label class="tier-type-toggle"><input type="checkbox" class="tier-checkbox"> За каждый кг</label>' +
         '<button type="button" class="btn-remove-tier" onclick="this.parentElement.remove()">&times;</button>';
     document.getElementById('tier-rows').appendChild(row);
 });

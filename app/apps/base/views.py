@@ -596,7 +596,9 @@ def manager_settings_view(request):
             min_w = (min_weights[idx] if idx < len(min_weights) else '0').strip().replace(',', '.')
             max_w = (max_weights[idx] if idx < len(max_weights) else '').strip().replace(',', '.')
             pr = pr.strip().replace(',', '.')
-            is_per_kg = str(idx) in is_per_kg_list or (idx < len(is_per_kg_list) and is_per_kg_list[idx] == '1')
+            
+            is_per_kg = (is_per_kg_list[idx] == '1') if idx < len(is_per_kg_list) else False
+            
             if not pr:
                 continue
             try:

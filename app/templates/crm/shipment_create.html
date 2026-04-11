@@ -479,25 +479,7 @@
         const weight = input.value;
         if (!weight) {
             updateSummary();
-            return;
-        }
-
-        fetch(`{% url "api_calculate_tariff" %}?weight=${encodeURIComponent(weight)}`)
-            .then(r => r.json())
-            .then(data => {
-                const row = input.closest('.item-row');
-                const priceInput = row.querySelector('input[name="item_service_price[]"]');
-                const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
-                
-                if (priceInput) priceInput.value = parseFloat(data.price).toFixed(2);
-                if (fixedInput) fixedInput.value = data.is_fixed ? '1' : '0';
-                
-                updateSummary();
-            })
-            .catch(() => {});
-    }
-
-    function updateSummary() {
+     function updateSummary() {
         const itemList = Array.from(itemRows.querySelectorAll('.item-row'));
         const expenseList = Array.from(expenseRows.querySelectorAll('.expense-row'));
 
@@ -591,6 +573,7 @@
                 updateSummary();
             }
         }
+
         if (event.target.classList.contains('remove-expense-row')) {
             const rows = expenseRows.querySelectorAll('.expense-row');
             if (rows.length > 1) {
@@ -604,10 +587,33 @@
         }
     });
 
-    // Run summary fetch right away
-    updateSummary();
-    // And also setup listeners
+    // Restore autocorrect on load
+    function initializeAllRows() {
+        const weightInputs = Array.from(itemRows.querySelectorAll('input[name="item_weight[]"]'));
+        const promises = weightInputs.map(input => {
+            const weight = input.value;
+            if (!weight || parseFloat(weight) === 0) return Promise.resolve();
+            return fetch(`{% url "api_calculate_tariff" %}?weight=${encodeURIComponent(weight)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const row = input.closest('.item-row');
+                    const priceInput = row.querySelector('input[name="item_service_price[]"]');
+                    const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
+                    if (priceInput) priceInput.value = parseFloat(data.price).toFixed(2);
+                    if (fixedInput) fixedInput.value = data.is_fixed ? '1' : '0';
+                })
+                .catch(() => {});
+        });
+        Promise.all(promises).then(() => {
+            updateSummary();
+        });
+    }
+
+    // Set listeners
     bindInputListeners(itemRows);
     bindInputListeners(expenseRows);
+    
+    // Trigger initialization check
+    initializeAllRows();
 </script>
 {% endblock %}
