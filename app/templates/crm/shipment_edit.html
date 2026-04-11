@@ -431,96 +431,94 @@
 <script>
     const itemRows = document.getElementById('item-rows');
     const expenseRows = document.getElementById('expense-rows');
-    let priceTiers = [];
 
-    fetch('{% url "api_price_tiers" %}')
-        .then(r => r.json())
-        .then(data => { priceTiers = data; })
-        .catch(() => {});
-
-    function parseNumber(value) {
-        const n = parseFloat(String(value || '').replace(',', '.'));
-        return Number.isFinite(n) ? n : 0;
-    }
-
-    // Returns { price, isFixed, total } or null
-    function getTariffForWeight(weight) {
-        if (!priceTiers.length || weight <= 0) return null;
-        for (let i = 0; i < priceTiers.length; i++) {
-            const tier = priceTiers[i];
-            const maxW = (tier.max_weight !== null && tier.max_weight !== '') ? parseFloat(tier.max_weight) : Infinity;
-            if (weight <= maxW) {
-                const price = parseFloat(tier.price);
-                const isFixed = !tier.is_per_kg;
-                return { price, isFixed, total: isFixed ? price : price * weight };
-            }
-        }
-        const last = priceTiers[priceTiers.length - 1];
-        const price = parseFloat(last.price);
-        const isFixed = !last.is_per_kg;
-        return { price, isFixed, total: isFixed ? price : price * weight };
+    function applyDebounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), wait);
+        };
     }
 
     function onWeightChange(e) {
         const input = e.target;
         if (input.name !== 'item_weight[]') return;
-        const weight = parseNumber(input.value);
-        const result = getTariffForWeight(weight);
-        if (result !== null) {
-            const row = input.closest('.item-row');
-            const priceInput = row.querySelector('input[name="item_service_price[]"]');
-            const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
-            priceInput.value = result.price.toFixed(2);
-            if (fixedInput) fixedInput.value = result.isFixed ? '1' : '0';
+        
+        const weight = input.value;
+        if (!weight) {
+            updateSummary();
+            return;
         }
-        updateSummary();
-    }
 
-    function getItemTotal(row) {
-        const weight = parseNumber(row.querySelector('input[name="item_weight[]"]').value);
-        const price = parseNumber(row.querySelector('input[name="item_service_price[]"]').value);
-        const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
-        const isFixed = fixedInput && fixedInput.value === '1';
-        return { weight, total: isFixed ? price : weight * price };
+        fetch(`{% url "api_calculate_tariff" %}?weight=${encodeURIComponent(weight)}`)
+            .then(r => r.json())
+            .then(data => {
+                const row = input.closest('.item-row');
+                const priceInput = row.querySelector('input[name="item_service_price[]"]');
+                const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
+                
+                if (priceInput) priceInput.value = parseFloat(data.price).toFixed(2);
+                if (fixedInput) fixedInput.value = data.is_fixed ? '1' : '0';
+                
+                updateSummary();
+            })
+            .catch(() => {});
     }
 
     function updateSummary() {
         const itemList = Array.from(itemRows.querySelectorAll('.item-row'));
         const expenseList = Array.from(expenseRows.querySelectorAll('.expense-row'));
 
-        let totalWeight = 0;
-        let itemsAmount = 0;
-        let expensesAmount = 0;
+        const payload = {
+            items: itemList.map(row => {
+                const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
+                return {
+                    weight: row.querySelector('input[name="item_weight[]"]')?.value || '0',
+                    price: row.querySelector('input[name="item_service_price[]"]')?.value || '0',
+                    is_fixed: fixedInput ? fixedInput.value === '1' : false
+                };
+            }),
+            expenses: expenseList.map(row => ({
+                qty: row.querySelector('input[name="expense_quantity[]"]')?.value || '0',
+                price: row.querySelector('input[name="expense_price[]"]')?.value || '0'
+            }))
+        };
+        
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfInput) return;
 
-        itemList.forEach((row) => {
-            const { weight, total } = getItemTotal(row);
-            totalWeight += weight;
-            itemsAmount += total;
-        });
-
-        expenseList.forEach((row) => {
-            const name = (row.querySelector('input[name="expense_name[]"]').value || '').trim();
-            const qty = parseNumber(row.querySelector('input[name="expense_quantity[]"]').value);
-            const price = parseNumber(row.querySelector('input[name="expense_price[]"]').value);
-            if (name || qty || price) {
-                expensesAmount += qty * price;
+        fetch('{% url "api_calculate_summary" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfInput.value
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                console.error("Calculation error:", data.error);
+                return;
             }
-        });
-
-        const grandTotal = itemsAmount + expensesAmount;
-
-        document.getElementById('sum-items-count').textContent = itemList.length;
-        document.getElementById('sum-weight').textContent = `${totalWeight.toFixed(2)} кг`;
-        document.getElementById('sum-items-amount').textContent = `${itemsAmount.toFixed(2)} сом`;
-        document.getElementById('sum-expenses').textContent = `${expensesAmount.toFixed(2)} сом`;
-        document.getElementById('sum-grand-total').textContent = `${grandTotal.toFixed(2)} сом`;
+            document.getElementById('sum-items-count').textContent = itemList.length;
+            document.getElementById('sum-weight').textContent = parseFloat(data.total_weight).toFixed(2) + ' кг';
+            document.getElementById('sum-items-amount').textContent = parseFloat(data.items_amount).toFixed(2) + ' сом';
+            document.getElementById('sum-expenses').textContent = parseFloat(data.expenses_amount).toFixed(2) + ' сом';
+            document.getElementById('sum-grand-total').textContent = parseFloat(data.grand_total).toFixed(2) + ' сом';
+        })
+        .catch(e => console.error("Summary calc failed", e));
     }
+
+    const debouncedWeightChange = applyDebounce(onWeightChange, 400);
+    const debouncedUpdateSummary = applyDebounce(updateSummary, 400);
 
     function bindInputListeners(scope) {
         scope.querySelectorAll('input').forEach((input) => {
-            input.addEventListener('input', updateSummary);
             if (input.name === 'item_weight[]') {
-                input.addEventListener('input', onWeightChange);
+                input.addEventListener('input', debouncedWeightChange);
+            } else {
+                input.addEventListener('input', debouncedUpdateSummary);
             }
         });
     }
@@ -574,8 +572,10 @@
         }
     });
 
+    // Run summary fetch right away
+    updateSummary();
+    // And also setup listeners
     bindInputListeners(itemRows);
     bindInputListeners(expenseRows);
-    updateSummary();
 </script>
 {% endblock %}

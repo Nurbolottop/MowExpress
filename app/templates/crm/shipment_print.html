@@ -564,7 +564,7 @@
                 document.body.style.background = '#fff'; // Clean background for PDF
                 const element = document.querySelector('.print-page');
                 const opt = {
-                    margin: 0,
+                    margin: 10,
                     filename: 'Накладная_{{ shipment.waybill_number }}.pdf',
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2, useCORS: true },

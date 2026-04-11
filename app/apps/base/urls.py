@@ -20,4 +20,6 @@ urlpatterns = [
     path('crm/analytics/', views.manager_analytics_view, name='manager_analytics'),
     path('crm/settings/', views.manager_settings_view, name='manager_settings'),
     path('crm/api/price-tiers/', views.api_price_tiers, name='api_price_tiers'),
+    path('crm/api/calculate-tariff/', views.api_calculate_tariff, name='api_calculate_tariff'),
+    path('crm/api/calculate-summary/', views.api_calculate_summary, name='api_calculate_summary'),
 ]

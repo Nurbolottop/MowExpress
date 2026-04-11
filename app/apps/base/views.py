@@ -350,6 +350,7 @@ def manager_shipment_edit_view(request, pk):
         units_counts = request.POST.getlist('item_units_count[]')
         item_weights = request.POST.getlist('item_weight[]')
         service_prices = request.POST.getlist('item_service_price[]')
+        item_fixed_prices = request.POST.getlist('item_is_fixed_price[]')
 
         expense_names = request.POST.getlist('expense_name[]')
         expense_quantities = request.POST.getlist('expense_quantity[]')
@@ -360,6 +361,7 @@ def manager_shipment_edit_view(request, pk):
             if not product_name.strip():
                 continue
             try:
+                is_fixed = (item_fixed_prices[idx] if idx < len(item_fixed_prices) else '0') == '1'
                 item_rows.append({
                     'service_name': (service_names[idx] or 'Услуга по доставке товара').strip(),
                     'product_name': product_name.strip(),
@@ -367,6 +369,7 @@ def manager_shipment_edit_view(request, pk):
                     'units_count': int(units_counts[idx] or 1),
                     'weight': Decimal((item_weights[idx] or '0').replace(',', '.')),
                     'service_price': Decimal((service_prices[idx] or '0').replace(',', '.')),
+                    'is_fixed_price': is_fixed,
                 })
             except (IndexError, ValueError, InvalidOperation):
                 messages.error(request, 'Проверьте заполнение товарных позиций.')
@@ -621,6 +624,7 @@ def manager_settings_view(request):
 
 
 from django.http import JsonResponse
+import json
 
 @user_passes_test(_is_manager, login_url='manager_login')
 def api_price_tiers(request):
@@ -628,3 +632,77 @@ def api_price_tiers(request):
         'min_weight', 'max_weight', 'price', 'is_per_kg'
     ))
     return JsonResponse(tiers, safe=False)
+
+@user_passes_test(_is_manager, login_url='manager_login')
+def api_calculate_tariff(request):
+    try:
+        weight_str = request.GET.get('weight', '0').replace(',', '.')
+        weight = Decimal(weight_str) if weight_str else Decimal('0')
+    except (InvalidOperation, ValueError):
+        weight = Decimal('0')
+        
+    tiers = PriceTier.objects.order_by('min_weight')
+    
+    price = Decimal('0')
+    is_per_kg = True
+    
+    for t in tiers:
+        max_w = t.max_weight if t.max_weight is not None else Decimal('inf')
+        if weight <= max_w:
+            price = t.price
+            is_per_kg = t.is_per_kg
+            break
+            
+    return JsonResponse({
+        'price': str(price),
+        'is_fixed': not is_per_kg,
+    })
+
+@user_passes_test(_is_manager, login_url='manager_login')
+def api_calculate_summary(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            items = data.get('items', [])
+            expenses = data.get('expenses', [])
+            
+            total_weight = Decimal('0')
+            items_amount = Decimal('0')
+            expenses_amount = Decimal('0')
+            
+            for item in items:
+                w_str = str(item.get('weight', '0')).replace(',', '.')
+                p_str = str(item.get('price', '0')).replace(',', '.')
+                fixed = item.get('is_fixed', False)
+                try:
+                    w = Decimal(w_str) if w_str else Decimal('0')
+                    p = Decimal(p_str) if p_str else Decimal('0')
+                except:
+                    continue
+                    
+                total_weight += w
+                if fixed:
+                    items_amount += p
+                else:
+                    items_amount += w * p
+                    
+            for exp in expenses:
+                q_str = str(exp.get('qty', '0')).replace(',', '.')
+                p_str = str(exp.get('price', '0')).replace(',', '.')
+                try:
+                    q = Decimal(q_str) if q_str else Decimal('0')
+                    p = Decimal(p_str) if p_str else Decimal('0')
+                except:
+                    continue
+                expenses_amount += q * p
+                
+            return JsonResponse({
+                'total_weight': str(total_weight),
+                'items_amount': str(items_amount),
+                'expenses_amount': str(expenses_amount),
+                'grand_total': str(items_amount + expenses_amount)
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({}, status=405)
+
