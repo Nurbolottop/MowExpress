@@ -1,34 +1,158 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        position: relative;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        background: url('{% static "img/airplane.png" %}') center/cover no-repeat;
+        padding: 2rem;
+    }
+    .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.6) 100%);
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+    }
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .hero p {
+        font-size: 1.2rem;
+        color: #e2e8f0;
+        margin-bottom: 2.5rem;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .btn-track-main {
+        display: inline-block;
+        padding: 1.2rem 3rem;
+        background: #10b981;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.5);
+    }
+    .btn-track-main:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.6);
+        color: white;
+    }
+    
+    .features-section {
+        padding: 6rem 0;
+        background: #f8fafc;
+    }
+    .modern-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 3rem;
+        margin-top: 4rem;
+    }
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+    }
+    .feature-img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+    }
+    .feature-content {
+        padding: 2rem;
+        text-align: center;
+    }
+    .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+    .feature-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.8rem;
+    }
+    .feature-text {
+        color: #64748b;
+        line-height: 1.6;
+    }
+    
+    .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="hero" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-    <div class="container">
+<section class="hero">
+    <div class="hero-content">
         <h1>{{ site_name }} - Доставка из Кыргызстана в Россию</h1>
-        <p style="max-width: 600px; margin: 0 auto 2rem;">Надежная и быстрая доставка посылок и грузов. Отслеживайте свои отправления в реальном времени с помощью персонального кода клиента.</p>
-        <div style="display: flex; gap: 1rem; justify-content: center;">
-            <a href="{% url 'tracking' %}" class="btn-track" style="display: inline-block; width: auto; padding: 1rem 2rem; background: var(--success); text-decoration: none;">🔍 Отследить груз</a>
-            <a href="{% url 'manager_login' %}" class="btn-track" style="display: inline-block; width: auto; padding: 1rem 2rem; background: transparent; border: 2px solid white; text-decoration: none;">📁 Вход для менеджера</a>
-        </div>
+        <p>Надежная и быстрая логистика для вашего бизнеса и личных отправлений. Отслеживайте грузы в реальном времени с помощью системы персональных кодов.</p>
+        <a href="{% url 'tracking' %}" class="btn-track-main">🔍 Отследить свой груз</a>
     </div>
 </section>
 
-<section class="container" style="padding: 4rem 0;">
-    <h2 style="text-align: center; margin-bottom: 3rem;">Как это работает?</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem;">
-        <div style="text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
-            <h3>Регистрация</h3>
-            <p>При оформлении груза вы получаете уникальный 3-4 значный код.</p>
-        </div>
-        <div style="text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
-            <h3>Подписка в TG</h3>
-            <p>Привяжите свой код в нашем Telegram боте и получайте уведомления.</p>
-        </div>
-        <div style="text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">✈️</div>
-            <h3>Доставка</h3>
-            <p>Следите за статусом в пути и узнайте первым, когда груз прибудет в РФ.</p>
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Как мы работаем?</h2>
+        <div class="modern-grid">
+            
+            <div class="feature-card">
+                <img src="{% static 'img/truck.png' %}" alt="Доставка" class="feature-img">
+                <div class="feature-content">
+                    <span class="feature-icon">📝</span>
+                    <h3 class="feature-title">Быстрое оформление</h3>
+                    <p class="feature-text">При сдаче груза вы моментально получаете уникальный код для полного контроля маршрута.</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <img src="{% static 'img/warehouse.png' %}" alt="Склад" class="feature-img">
+                <div class="feature-content">
+                    <span class="feature-icon">🤖</span>
+                    <h3 class="feature-title">Telegram Уведомления</h3>
+                    <p class="feature-text">Привяжите свой код в нашем Telegram-боте и получайте информацию о смене статусов автоматически.</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <img src="{% static 'img/airplane.png' %}" alt="Самолет" class="feature-img" style="object-position: center bottom;">
+                <div class="feature-content">
+                    <span class="feature-icon">✈️</span>
+                    <h3 class="feature-title">Своевременная Доставка</h3>
+                    <p class="feature-text">Наша сеть логистики гарантирует, что ваш груз прибудет в пункт назначения точно в срок.</p>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>

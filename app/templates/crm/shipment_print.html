@@ -556,33 +556,42 @@
             console.error('QR generation failed:', e);
         }
 
-        // Share PDF link — copies the print page URL to clipboard
-        function sharePDFLink() {
-            const pageUrl = window.location.href;
-            const btn = document.getElementById('shareBtn');
-            const originalContent = btn.innerHTML;
-
-            // Try native share first (mobile)
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Накладная № {{ shipment.waybill_number }}',
-                    text: 'Накладная от {{ shipment.shipping_date|date:"d.m.Y" }}',
-                    url: pageUrl
-                }).catch(function(err) {
-                    console.log('Native share cancelled or failed:', err);
+        // On load, if URL has ?pdf=1, convert to PDF immediately and replace window
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('pdf') === '1') {
+                document.querySelector('.no-print-bar').style.display = 'none';
+                document.body.style.background = '#fff'; // Clean background for PDF
+                const element = document.querySelector('.print-page');
+                const opt = {
+                    margin: 0,
+                    filename: 'Накладная_{{ shipment.waybill_number }}.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).outputPdf('blob').then(function(pdfBlob) {
+                    const blobUrl = URL.createObjectURL(pdfBlob);
+                    window.location.replace(blobUrl);
                 });
-                return;
             }
+        };
 
-            // Desktop: copy link to clipboard
+        // Share PDF link — copies the print page URL with ?pdf=1
+        function sharePDFLink() {
+            const baseUrl = window.location.origin + window.location.pathname;
+            const pdfUrl = baseUrl + '?pdf=1';
+
+            // Desktop: copy link to clipboard and open in new tab
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(pageUrl).then(function() {
-                    showToast('✅ Ссылка скопирована в буфер обмена!');
+                navigator.clipboard.writeText(pdfUrl).then(function() {
+                    showToast('✅ Ссылка скопирована! Открываем предпросмотр...');
+                    setTimeout(() => window.open(pdfUrl, '_blank'), 800);
                 }).catch(function() {
-                    fallbackCopy(pageUrl);
+                    fallbackCopy(pdfUrl);
                 });
             } else {
-                fallbackCopy(pageUrl);
+                fallbackCopy(pdfUrl);
             }
         }
 
@@ -596,9 +605,11 @@
             ta.select();
             try {
                 document.execCommand('copy');
-                showToast('✅ Ссылка скопирована в буфер обмена!');
+                showToast('✅ Ссылка скопирована! Открываем предпросмотр...');
+                setTimeout(() => window.open(text, '_blank'), 800);
             } catch (e) {
-                showToast('❌ Не удалось скопировать. Скопируйте адрес вручную из адресной строки.');
+                showToast('❌ Ошибка копирования. Открываем PDF...');
+                setTimeout(() => window.open(text, '_blank'), 800);
             }
             document.body.removeChild(ta);
         }
