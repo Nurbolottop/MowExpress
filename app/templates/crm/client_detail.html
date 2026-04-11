@@ -7,7 +7,7 @@
 <div class="crm-card">
     <div class="crm-card-header">
         <div class="crm-card-title">{{ client.first_name }} {{ client.last_name }}</div>
-        <div style="display: flex; gap: 0.5rem;">
+        <div class="crm-card-actions">
             <a href="{% url 'manager_shipment_create' %}?code={{ client.client_code }}" class="crm-btn crm-btn-primary crm-btn-sm">+ Новый заказ</a>
             <a href="{% url 'manager_clients' %}" class="crm-btn crm-btn-outline crm-btn-sm">&#8592; Все клиенты</a>
         </div>

@@ -242,9 +242,54 @@
     }
 
     @media (max-width: 900px) {
+        .oc-card-head {
+            flex-wrap: wrap;
+        }
+
+        .oc-actions {
+            flex-wrap: wrap;
+        }
+
+        .oc-actions .crm-btn {
+            flex: 1 1 auto;
+        }
+
         .oc-base-grid,
         .oc-grid-items,
-        .oc-grid-expenses { grid-template-columns: 1fr; }
+        .oc-grid-expenses {
+            grid-template-columns: 1fr;
+        }
+
+        .oc-grid-items-row1 {
+            grid-template-columns: 1fr;
+        }
+
+        .oc-grid-items-row2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .oc-grid-items-row2 .oc-remove {
+            grid-column: 1 / -1;
+            width: 100%;
+            height: 40px;
+        }
+
+        .oc-grid-expenses {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .oc-grid-expenses .oc-remove {
+            grid-column: 1 / -1;
+            width: 100%;
+            height: 40px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .oc-grid-items-row2,
+        .oc-grid-expenses {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}

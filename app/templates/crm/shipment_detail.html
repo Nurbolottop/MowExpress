@@ -34,7 +34,7 @@
             Заказ #{{ shipment.id }}
             <span class="crm-badge crm-badge-{{ shipment.status }}" style="margin-left: 0.5rem;">{{ shipment.get_status_display }}</span>
         </div>
-        <div style="display: flex; gap: 0.35rem; flex-wrap: nowrap; white-space: nowrap;">
+        <div class="crm-card-actions">
             <a href="{% url 'manager_shipment_edit' shipment.id %}" class="crm-btn crm-btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;">&#9998; Редактировать</a>
             <a href="{% url 'manager_shipment_sticker' shipment.id %}" class="crm-btn crm-btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;" target="_blank">Самоклейка</a>
             <a href="{% url 'manager_shipment_print' shipment.id %}" class="crm-btn crm-btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;" target="_blank">Накладная</a>
