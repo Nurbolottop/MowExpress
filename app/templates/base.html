@@ -19,8 +19,6 @@
                     <a href="{% url 'manager_dashboard' %}">CRM</a>
                     <a href="{% url 'manager_profile' %}">Профиль</a>
                     <a href="{% url 'manager_logout' %}" class="btn-admin">Выйти</a>
-                {% else %}
-                    <a href="{% url 'manager_login' %}" class="btn-admin">Вход менеджера</a>
                 {% endif %}
             </div>
         </div>

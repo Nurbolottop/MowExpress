@@ -8,4 +8,6 @@ def site_settings(request):
         'site_organization': settings.organization,
         'site_address': settings.address,
         'site_phone': settings.phone,
+        'site_logo': settings.logo.url if settings.logo else None,
     }
+

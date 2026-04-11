@@ -11,7 +11,7 @@
         border-radius: 12px;
         border: 1px solid #e2e8f0;
         padding: 1.5rem;
-        max-width: 700px;
+        max-width: 820px;
     }
     .settings-card h3 {
         font-size: 1.1rem;
@@ -25,33 +25,48 @@
     }
     .tier-header {
         display: grid;
-        grid-template-columns: 1fr 1fr 50px;
-        gap: 0.75rem;
+        grid-template-columns: 100px 100px 130px 1fr 44px;
+        gap: 0.6rem;
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: #475569;
         margin-bottom: 0.4rem;
         padding: 0 0.1rem;
     }
     .tier-row {
         display: grid;
-        grid-template-columns: 1fr 1fr 50px;
-        gap: 0.75rem;
+        grid-template-columns: 100px 100px 130px 1fr 44px;
+        gap: 0.6rem;
         margin-bottom: 0.5rem;
         align-items: center;
     }
-    .tier-row input {
+    .tier-row input[type="number"] {
         width: 100%;
-        padding: 0.5rem 0.7rem;
+        padding: 0.45rem 0.6rem;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         font-family: inherit;
     }
-    .tier-row input:focus {
+    .tier-row input[type="number"]:focus {
         outline: none;
         border-color: #2563eb;
         box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+    }
+    .tier-type-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #334155;
+        cursor: pointer;
+        user-select: none;
+    }
+    .tier-type-toggle input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #f59e0b;
     }
     .tier-actions {
         display: flex;
@@ -97,32 +112,63 @@
         justify-content: center;
     }
     .btn-remove-tier:hover { background: #fecaca; }
+    .tier-example {
+        margin-top: 1.2rem;
+        padding: 0.75rem 1rem;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        color: #1e40af;
+        line-height: 1.7;
+    }
+    .tier-example strong { font-weight: 700; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="settings-card">
     <h3>Тарифы по весу</h3>
-    <div class="subtitle">Укажите стоимость за кг для каждого весового диапазона. Цена применяется автоматически при вводе веса в заказе.</div>
+    <div class="subtitle">
+        Для каждого диапазона укажите тип: <strong>Фиксированная сумма</strong> (весь диапазон = одна цена)
+        или <strong>За каждый кг</strong> (цена × вес).
+    </div>
 
     <form method="post">
         {% csrf_token %}
         <div class="tier-header">
+            <span>От (кг)</span>
             <span>До (кг)</span>
-            <span>Цена за кг (сом)</span>
+            <span>Цена (сом)</span>
+            <span>Тип тарифа</span>
             <span></span>
         </div>
         <div id="tier-rows">
             {% for tier in tiers %}
             <div class="tier-row">
-                <input type="number" name="tier_max_weight[]" step="0.01" min="0" value="{{ tier.max_weight|unlocalize }}" placeholder="Например: 3" required>
-                <input type="number" name="tier_price_per_kg[]" step="0.01" min="0" value="{{ tier.price_per_kg|unlocalize }}" placeholder="Например: 200" required>
+                <input type="number" name="tier_min_weight[]" step="0.01" min="0"
+                       value="{{ tier.min_weight|unlocalize }}" placeholder="0">
+                <input type="number" name="tier_max_weight[]" step="0.01" min="0"
+                       value="{% if tier.max_weight %}{{ tier.max_weight|unlocalize }}{% endif %}"
+                       placeholder="∞ (пусто)">
+                <input type="number" name="tier_price[]" step="0.01" min="0"
+                       value="{{ tier.price|unlocalize }}" placeholder="Например: 1500" required>
+                <label class="tier-type-toggle">
+                    <input type="checkbox" name="tier_is_per_kg[]" value="1"
+                           {% if tier.is_per_kg %}checked{% endif %}>
+                    За каждый кг
+                </label>
                 <button type="button" class="btn-remove-tier" onclick="this.parentElement.remove()">&times;</button>
             </div>
             {% empty %}
             <div class="tier-row">
-                <input type="number" name="tier_max_weight[]" step="0.01" min="0" placeholder="Например: 3" required>
-                <input type="number" name="tier_price_per_kg[]" step="0.01" min="0" placeholder="Например: 200" required>
+                <input type="number" name="tier_min_weight[]" step="0.01" min="0" value="0" placeholder="0">
+                <input type="number" name="tier_max_weight[]" step="0.01" min="0" placeholder="∞ (пусто)">
+                <input type="number" name="tier_price[]" step="0.01" min="0" placeholder="Например: 1500" required>
+                <label class="tier-type-toggle">
+                    <input type="checkbox" name="tier_is_per_kg[]" value="1">
+                    За каждый кг
+                </label>
                 <button type="button" class="btn-remove-tier" onclick="this.parentElement.remove()">&times;</button>
             </div>
             {% endfor %}
@@ -132,14 +178,26 @@
             <button type="submit" class="btn-save-tiers">Сохранить</button>
         </div>
     </form>
+
+    <div class="tier-example">
+        <strong>Пример настройки по вашей схеме:</strong><br>
+        От 0 → До 3 кг → 1500 сом → <em>без галочки (фиксированная)</em><br>
+        От 3 → До 5 кг → 2500 сом → <em>без галочки (фиксированная)</em><br>
+        От 5 → До (пусто) → 350 сом → <em>✓ За каждый кг</em><br>
+        <br>
+        Результат: 2 кг = <strong>1500 сом</strong> | 4 кг = <strong>2500 сом</strong> | 8 кг = 8 × 350 = <strong>2800 сом</strong>
+    </div>
 </div>
 
 <script>
 document.getElementById('add-tier-btn').addEventListener('click', function() {
     var row = document.createElement('div');
     row.className = 'tier-row';
-    row.innerHTML = '<input type="number" name="tier_max_weight[]" step="0.01" min="0" placeholder="Например: 10" required>' +
-        '<input type="number" name="tier_price_per_kg[]" step="0.01" min="0" placeholder="Например: 150" required>' +
+    row.innerHTML =
+        '<input type="number" name="tier_min_weight[]" step="0.01" min="0" placeholder="0">' +
+        '<input type="number" name="tier_max_weight[]" step="0.01" min="0" placeholder="∞ (пусто)">' +
+        '<input type="number" name="tier_price[]" step="0.01" min="0" placeholder="Например: 1500" required>' +
+        '<label class="tier-type-toggle"><input type="checkbox" name="tier_is_per_kg[]" value="1"> За каждый кг</label>' +
         '<button type="button" class="btn-remove-tier" onclick="this.parentElement.remove()">&times;</button>';
     document.getElementById('tier-rows').appendChild(row);
 });

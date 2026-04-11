@@ -288,6 +288,7 @@
                                 <div class="crm-form-group" style="margin-bottom: 0;">
                                     <label class="crm-form-label">Цена услуги</label>
                                     <input type="number" name="item_service_price[]" class="crm-form-input" step="0.01" min="0" value="{{ item.service_price|unlocalize }}" required>
+                                    <input type="hidden" name="item_is_fixed_price[]" value="{{ item.is_fixed_price|yesno:'1,0' }}">
                                 </div>
                                 <button type="button" class="crm-btn crm-btn-danger crm-btn-sm oc-remove remove-item-row">×</button>
                             </div>
@@ -320,6 +321,7 @@
                                 <div class="crm-form-group" style="margin-bottom: 0;">
                                     <label class="crm-form-label">Цена услуги</label>
                                     <input type="number" name="item_service_price[]" class="crm-form-input" step="0.01" min="0" required>
+                                    <input type="hidden" name="item_is_fixed_price[]" value="0">
                                 </div>
                                 <button type="button" class="crm-btn crm-btn-danger crm-btn-sm oc-remove remove-item-row">×</button>
                             </div>
@@ -441,27 +443,45 @@
         return Number.isFinite(n) ? n : 0;
     }
 
-    function getPriceForWeight(weight) {
+    // Returns { price, isFixed, total } or null
+    function getTariffForWeight(weight) {
         if (!priceTiers.length || weight <= 0) return null;
         for (let i = 0; i < priceTiers.length; i++) {
-            if (weight <= parseFloat(priceTiers[i].max_weight)) {
-                return parseFloat(priceTiers[i].price_per_kg);
+            const tier = priceTiers[i];
+            const maxW = (tier.max_weight !== null && tier.max_weight !== '') ? parseFloat(tier.max_weight) : Infinity;
+            if (weight <= maxW) {
+                const price = parseFloat(tier.price);
+                const isFixed = !tier.is_per_kg;
+                return { price, isFixed, total: isFixed ? price : price * weight };
             }
         }
-        return parseFloat(priceTiers[priceTiers.length - 1].price_per_kg);
+        const last = priceTiers[priceTiers.length - 1];
+        const price = parseFloat(last.price);
+        const isFixed = !last.is_per_kg;
+        return { price, isFixed, total: isFixed ? price : price * weight };
     }
 
     function onWeightChange(e) {
         const input = e.target;
         if (input.name !== 'item_weight[]') return;
         const weight = parseNumber(input.value);
-        const price = getPriceForWeight(weight);
-        if (price !== null) {
+        const result = getTariffForWeight(weight);
+        if (result !== null) {
             const row = input.closest('.item-row');
             const priceInput = row.querySelector('input[name="item_service_price[]"]');
-            priceInput.value = price;
+            const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
+            priceInput.value = result.price.toFixed(2);
+            if (fixedInput) fixedInput.value = result.isFixed ? '1' : '0';
         }
         updateSummary();
+    }
+
+    function getItemTotal(row) {
+        const weight = parseNumber(row.querySelector('input[name="item_weight[]"]').value);
+        const price = parseNumber(row.querySelector('input[name="item_service_price[]"]').value);
+        const fixedInput = row.querySelector('input[name="item_is_fixed_price[]"]');
+        const isFixed = fixedInput && fixedInput.value === '1';
+        return { weight, total: isFixed ? price : weight * price };
     }
 
     function updateSummary() {
@@ -473,10 +493,9 @@
         let expensesAmount = 0;
 
         itemList.forEach((row) => {
-            const weight = parseNumber(row.querySelector('input[name="item_weight[]"]').value);
-            const price = parseNumber(row.querySelector('input[name="item_service_price[]"]').value);
+            const { weight, total } = getItemTotal(row);
             totalWeight += weight;
-            itemsAmount += weight * price;
+            itemsAmount += total;
         });
 
         expenseList.forEach((row) => {
@@ -508,11 +527,13 @@
 
     document.getElementById('add-item-row').addEventListener('click', function () {
         const clone = itemRows.querySelector('.item-row').cloneNode(true);
-        clone.querySelectorAll('input').forEach((input, idx) => {
-            if (idx === 0) {
+        clone.querySelectorAll('input').forEach((input) => {
+            if (input.type === 'hidden') {
+                input.value = '0';
+            } else if (input.name === 'item_service_name[]') {
                 input.value = 'Услуга по доставке товара';
             } else if (input.type === 'number') {
-                input.value = input.name.includes('places') || input.name.includes('units') ? '1' : '';
+                input.value = (input.name.includes('places') || input.name.includes('units')) ? '1' : '';
             } else {
                 input.value = '';
             }
@@ -540,7 +561,6 @@
                 updateSummary();
             }
         }
-
         if (event.target.classList.contains('remove-expense-row')) {
             const rows = expenseRows.querySelectorAll('.expense-row');
             if (rows.length > 1) {

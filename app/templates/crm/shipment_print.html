@@ -173,7 +173,7 @@
                 </svg>
                 Печать / Сохранить PDF
             </button>
-            <button class="btn-share" id="shareBtn" onclick="generateAndSharePDF()">
+            <button class="btn-share" id="shareBtn" onclick="sharePDFLink()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="18" cy="5" r="3"></circle>
                     <circle cx="6" cy="12" r="3"></circle>
@@ -184,12 +184,14 @@
                 Поделиться PDF
             </button>
         </div>
+        {% if is_manager %}
         <a href="{% url 'manager_shipment_detail' shipment.id %}" class="link-back">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"></path>
             </svg>
             Назад в CRM
         </a>
+        {% endif %}
     </div>
 
     <div class="print-page">

@@ -241,11 +241,14 @@ def manager_shipment_create_view(request):
         expense_quantities = request.POST.getlist('expense_quantity[]')
         expense_prices = request.POST.getlist('expense_price[]')
 
+        item_fixed_prices = request.POST.getlist('item_is_fixed_price[]')
+
         item_rows = []
         for idx, product_name in enumerate(product_names):
             if not product_name.strip():
                 continue
             try:
+                is_fixed = (item_fixed_prices[idx] if idx < len(item_fixed_prices) else '0') == '1'
                 item_rows.append({
                     'service_name': (service_names[idx] or 'Услуга по доставке товара').strip(),
                     'product_name': product_name.strip(),
@@ -253,6 +256,7 @@ def manager_shipment_create_view(request):
                     'units_count': int(units_counts[idx] or 1),
                     'weight': Decimal((item_weights[idx] or '0').replace(',', '.')),
                     'service_price': Decimal((service_prices[idx] or '0').replace(',', '.')),
+                    'is_fixed_price': is_fixed,
                 })
             except (IndexError, ValueError, InvalidOperation):
                 messages.error(request, 'Проверьте заполнение товарных позиций.')
@@ -493,7 +497,6 @@ def manager_shipment_status_quick_update_view(request, pk):
 
 from django.urls import reverse
 
-@user_passes_test(_is_manager, login_url='manager_login')
 def manager_shipment_print_view(request, pk):
     shipment = get_object_or_404(
         Shipment.objects.select_related('client').prefetch_related('items', 'expenses'), pk=pk
@@ -518,6 +521,7 @@ def manager_shipment_print_view(request, pk):
         'items_total': items_total,
         'grand_total': grand_total,
         'tracking_url': tracking_url,
+        'is_manager': request.user.is_authenticated and request.user.is_staff,
     })
 
 
@@ -580,19 +584,26 @@ def manager_analytics_view(request):
 def manager_settings_view(request):
     if request.method == 'POST':
         # Clear existing tiers and re-create from form
+        min_weights = request.POST.getlist('tier_min_weight[]')
         max_weights = request.POST.getlist('tier_max_weight[]')
-        prices = request.POST.getlist('tier_price_per_kg[]')
+        prices = request.POST.getlist('tier_price[]')
+        is_per_kg_list = request.POST.getlist('tier_is_per_kg[]')
         tiers = []
-        for mw, pr in zip(max_weights, prices):
-            mw = mw.strip().replace(',', '.')
+        for idx, pr in enumerate(prices):
+            min_w = (min_weights[idx] if idx < len(min_weights) else '0').strip().replace(',', '.')
+            max_w = (max_weights[idx] if idx < len(max_weights) else '').strip().replace(',', '.')
             pr = pr.strip().replace(',', '.')
-            if not mw or not pr:
+            is_per_kg = str(idx) in is_per_kg_list or (idx < len(is_per_kg_list) and is_per_kg_list[idx] == '1')
+            if not pr:
                 continue
             try:
-                tiers.append({
-                    'max_weight': Decimal(mw),
-                    'price_per_kg': Decimal(pr),
-                })
+                tier_data = {
+                    'min_weight': Decimal(min_w) if min_w else Decimal('0'),
+                    'max_weight': Decimal(max_w) if max_w else None,
+                    'price': Decimal(pr),
+                    'is_per_kg': is_per_kg,
+                }
+                tiers.append(tier_data)
             except (InvalidOperation, ValueError):
                 messages.error(request, 'Проверьте правильность введённых данных.')
                 return redirect('manager_settings')
@@ -613,5 +624,7 @@ from django.http import JsonResponse
 
 @user_passes_test(_is_manager, login_url='manager_login')
 def api_price_tiers(request):
-    tiers = list(PriceTier.objects.order_by('max_weight').values('max_weight', 'price_per_kg'))
+    tiers = list(PriceTier.objects.order_by('min_weight', 'max_weight').values(
+        'min_weight', 'max_weight', 'price', 'is_per_kg'
+    ))
     return JsonResponse(tiers, safe=False)

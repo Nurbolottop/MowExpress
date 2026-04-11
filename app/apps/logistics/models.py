@@ -94,10 +94,16 @@ class ShipmentItem(models.Model):
     units_count = models.PositiveIntegerField("Количество шт.", default=1)
     weight = models.DecimalField("Общий вес, кг", max_digits=10, decimal_places=2)
     service_price = models.DecimalField("Стоимость услуги", max_digits=10, decimal_places=2)
+    is_fixed_price = models.BooleanField("Фиксированная цена", default=False)
     total_amount = models.DecimalField("Сумма", max_digits=15, decimal_places=2, editable=False, default=0)
 
     def save(self, *args, **kwargs):
-        self.total_amount = self.weight * self.service_price
+        # Fixed price: total = service_price as-is
+        # Per-kg price: total = weight × service_price
+        if self.is_fixed_price:
+            self.total_amount = self.service_price
+        else:
+            self.total_amount = self.weight * self.service_price
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -143,13 +149,28 @@ class ShipmentStatusHistory(models.Model):
 
 
 class PriceTier(models.Model):
-    max_weight = models.DecimalField("До (кг)", max_digits=10, decimal_places=2)
-    price_per_kg = models.DecimalField("Цена за кг (сом)", max_digits=10, decimal_places=2)
+    min_weight = models.DecimalField("От (кг)", max_digits=10, decimal_places=2, default=0)
+    max_weight = models.DecimalField("До (кг)", max_digits=10, decimal_places=2, null=True, blank=True,
+                                     help_text="Оставьте пустым для последнего тарифа (∞)")
+    price = models.DecimalField("Цена (сом)", max_digits=10, decimal_places=2, default=0)
+    is_per_kg = models.BooleanField("За каждый кг", default=False,
+                                    help_text="Если включено — цена × вес. Иначе — фиксированная сумма.")
+    # Legacy field kept for backward compat, will be removed after migration
+    price_per_kg = models.DecimalField("Цена за кг (устар.)", max_digits=10, decimal_places=2, default=0)
+
+    def get_price_for_weight(self, weight):
+        """Return total price for given weight using this tier's pricing rule."""
+        if self.is_per_kg:
+            return float(self.price) * float(weight)
+        return float(self.price)
 
     def __str__(self):
-        return f"До {self.max_weight} кг — {self.price_per_kg} сом/кг"
+        if self.is_per_kg:
+            return f"От {self.min_weight} кг — {self.price} сом/кг"
+        max_label = f"{self.max_weight} кг" if self.max_weight else "∞"
+        return f"До {max_label} — {self.price} сом (фикс.)"
 
     class Meta:
         verbose_name = "Тариф по весу"
         verbose_name_plural = "Тарифы по весу"
-        ordering = ['max_weight']
+        ordering = ['min_weight', 'max_weight']
