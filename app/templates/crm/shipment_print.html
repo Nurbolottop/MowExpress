@@ -554,100 +554,79 @@
             console.error('QR generation failed:', e);
         }
 
-        // Generate and share PDF
-        function generateAndSharePDF() {
+        // Share PDF link — copies the print page URL to clipboard
+        function sharePDFLink() {
+            const pageUrl = window.location.href;
             const btn = document.getElementById('shareBtn');
             const originalContent = btn.innerHTML;
-            btn.classList.add('btn-loading');
-            btn.innerHTML = '<span class="spinner"></span> Генерация PDF...';
 
-            const element = document.querySelector('.print-page');
-            const opt = {
-                margin: [5, 5, 5, 5],
-                filename: 'Накладная_{{ shipment.waybill_number }}.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    letterRendering: true
-                },
-                jsPDF: {
-                    unit: 'mm',
-                    format: 'a4',
-                    orientation: 'portrait'
-                }
-            };
+            // Try native share first (mobile)
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Накладная № {{ shipment.waybill_number }}',
+                    text: 'Накладная от {{ shipment.shipping_date|date:"d.m.Y" }}',
+                    url: pageUrl
+                }).catch(function(err) {
+                    console.log('Native share cancelled or failed:', err);
+                });
+                return;
+            }
 
-            // Generate PDF as blob and open in new tab
-            html2pdf().set(opt).from(element).outputPdf('blob').then(function(blob) {
-                const blobUrl = URL.createObjectURL(blob);
-
-                // Open PDF in new tab for sharing
-                const newWindow = window.open(blobUrl, '_blank');
-
-                // Also offer download
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = opt.filename;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // Reset button
-                btn.classList.remove('btn-loading');
-                btn.innerHTML = originalContent;
-
-                // Clean up blob URL after delay
-                setTimeout(function() {
-                    URL.revokeObjectURL(blobUrl);
-                }, 60000);
-            }).catch(function(error) {
-                console.error('PDF generation failed:', error);
-                alert('Ошибка при создании PDF. Попробуйте еще раз.');
-                btn.classList.remove('btn-loading');
-                btn.innerHTML = originalContent;
-            });
+            // Desktop: copy link to clipboard
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(pageUrl).then(function() {
+                    showToast('✅ Ссылка скопирована в буфер обмена!');
+                }).catch(function() {
+                    fallbackCopy(pageUrl);
+                });
+            } else {
+                fallbackCopy(pageUrl);
+            }
         }
 
-        // Native share API for mobile (if supported)
-        async function nativeShare() {
-            if (navigator.share && navigator.canShare) {
-                try {
-                    const element = document.querySelector('.print-page');
-                    const opt = {
-                        margin: [5, 5, 5, 5],
-                        filename: 'Накладная_{{ shipment.waybill_number }}.pdf',
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2, useCORS: true },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                    };
-
-                    const blob = await html2pdf().set(opt).from(element).outputPdf('blob');
-                    const file = new File([blob], opt.filename, { type: 'application/pdf' });
-
-                    if (navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            title: 'Накладная {{ shipment.waybill_number }}',
-                            text: 'Накладная от {{ shipment.shipping_date|date:"d.m.Y" }}',
-                            files: [file]
-                        });
-                        return true;
-                    }
-                } catch (err) {
-                    console.log('Native share failed, falling back:', err);
-                }
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('✅ Ссылка скопирована в буфер обмена!');
+            } catch (e) {
+                showToast('❌ Не удалось скопировать. Скопируйте адрес вручную из адресной строки.');
             }
-            return false;
+            document.body.removeChild(ta);
         }
 
-        // Override share button to try native share first
-        document.getElementById('shareBtn').onclick = async function() {
-            const nativeWorked = await nativeShare();
-            if (!nativeWorked) {
-                generateAndSharePDF();
+        function showToast(msg) {
+            let toast = document.getElementById('shareToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'shareToast';
+                toast.style.cssText = [
+                    'position:fixed', 'bottom:28px', 'left:50%',
+                    'transform:translateX(-50%)',
+                    'background:#1e293b', 'color:#fff',
+                    'padding:12px 24px', 'border-radius:10px',
+                    'font-size:14px', 'font-weight:600',
+                    'box-shadow:0 8px 24px rgba(0,0,0,0.3)',
+                    'z-index:9999', 'transition:opacity 0.3s ease',
+                    'white-space:nowrap'
+                ].join(';');
+                document.body.appendChild(toast);
             }
-        };
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(function() {
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+
+        document.getElementById('shareBtn').onclick = sharePDFLink;
     </script>
 </body>
 </html>

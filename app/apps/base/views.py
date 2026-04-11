@@ -218,7 +218,7 @@ def manager_shipment_detail_view(request, pk):
         'shipment': shipment,
         'history': history,
         'status_steps': status_steps,
-        'next_status_steps': status_steps[current_index + 1:],
+        'next_status_steps': status_steps[current_index + 1: current_index + 2],
     })
 
 
