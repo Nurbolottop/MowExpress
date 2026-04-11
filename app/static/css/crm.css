@@ -145,6 +145,10 @@ body {
     margin-left: 260px;
     background: var(--crm-bg);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: calc(100% - 260px);
 }
 
 /* Top Bar */
@@ -247,9 +251,10 @@ body {
 /* Stat Cards */
 .crm-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
+    width: 100%;
 }
 
 .crm-stat-card {
@@ -261,6 +266,8 @@ body {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    width: 100%;
+    min-width: 0;
 }
 
 .crm-stat-icon {
@@ -937,6 +944,8 @@ body {
 
     .crm-main {
         margin-left: 0;
+        width: 100%;
+        min-width: 0;
     }
 
     .crm-mobile-header {
@@ -1037,10 +1046,11 @@ body {
         gap: 0.75rem;
     }
 
-    /* Stats grid */
+    /* Stats grid - force full width */
     .crm-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr 1fr;
         gap: 0.75rem;
+        width: 100%;
     }
 
     .crm-stat-card {
@@ -1149,6 +1159,7 @@ body {
 @media (max-width: 768px) {
     .crm-stats-grid {
         grid-template-columns: 1fr;
+        width: 100%;
     }
 
     .crm-detail-grid {
