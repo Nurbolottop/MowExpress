@@ -444,7 +444,22 @@
             </div>
 
             <div class="oc-card">
-                <div class="o{% block extra_js %}
+                <div class="oc-body">
+                    <div class="oc-actions">
+                        <button type="submit" class="crm-btn crm-btn-primary crm-btn-lg" form="order-create-form">Создать заказ</button>
+                        <a href="{% url 'manager_shipments' %}" class="crm-btn crm-btn-outline crm-btn-lg">Отмена</a>
+                    </div>
+                    <div class="crm-form-help" style="margin-top: 0.8rem;">
+                        После сохранения заказу автоматически присвоится номер накладной.
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
 <script>
     const itemRows = document.getElementById('item-rows');
     const expenseRows = document.getElementById('expense-rows');
