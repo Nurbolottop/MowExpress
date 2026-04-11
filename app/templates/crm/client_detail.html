@@ -1,0 +1,92 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Клиент {{ client.client_code }}{% endblock %}
+{% block page_title %}Карточка клиента{% endblock %}
+
+{% block content %}
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">{{ client.first_name }} {{ client.last_name }}</div>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{% url 'manager_shipment_create' %}?code={{ client.client_code }}" class="crm-btn crm-btn-primary crm-btn-sm">+ Новый заказ</a>
+            <a href="{% url 'manager_clients' %}" class="crm-btn crm-btn-outline crm-btn-sm">&#8592; Все клиенты</a>
+        </div>
+    </div>
+
+    <div class="crm-detail-grid">
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Код клиента</div>
+            <div class="crm-detail-value" style="font-size: 1.5rem; color: var(--crm-primary);">{{ client.client_code }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Телефон</div>
+            <div class="crm-detail-value">{{ client.phone_number }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Дата регистрации</div>
+            <div class="crm-detail-value">{{ client.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="crm-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon blue">&#128230;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Заказов</div>
+            <div class="crm-stat-value">{{ shipments|length }}</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon green">&#128176;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Общая сумма</div>
+            <div class="crm-stat-value">{{ total_spent }} <span style="font-size: 0.6em;">сом</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">История заказов</div>
+    </div>
+
+    {% if shipments %}
+        <div class="crm-table-wrap">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Вес</th>
+                        <th>Цена/кг</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in shipments %}
+                    <tr>
+                        <td><a href="{% url 'manager_shipment_detail' s.id %}" class="crm-link">{{ s.id }}</a></td>
+                        <td>{{ s.weight }} кг</td>
+                        <td>{{ s.price_per_kg }}</td>
+                        <td>{{ s.total_price }} сом</td>
+                        <td><span class="crm-badge crm-badge-{{ s.status }}">{{ s.get_status_display }}</span></td>
+                        <td>{{ s.shipping_date|date:"d.m.Y" }}</td>
+                        <td>
+                            <a href="{% url 'manager_shipment_detail' s.id %}" class="crm-btn crm-btn-outline crm-btn-sm">Открыть</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="crm-empty">
+            <div class="crm-empty-icon">&#128230;</div>
+            <div class="crm-empty-text">У клиента пока нет заказов</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

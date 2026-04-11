@@ -1,0 +1,60 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Клиенты{% endblock %}
+{% block page_title %}Клиенты{% endblock %}
+
+{% block content %}
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Поиск клиентов</div>
+        <a href="{% url 'manager_client_create' %}" class="crm-btn crm-btn-primary crm-btn-sm">+ Новый клиент</a>
+    </div>
+    <form method="get" class="crm-filter-bar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Код, имя, фамилия или телефон" class="crm-form-input" style="flex: 1; min-width: 240px;">
+        <button type="submit" class="crm-btn crm-btn-primary">Найти</button>
+        {% if query %}<a href="{% url 'manager_clients' %}" class="crm-btn crm-btn-outline">Сброс</a>{% endif %}
+    </form>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Список клиентов ({{ clients|length }})</div>
+    </div>
+
+    {% if clients %}
+        <div class="crm-table-wrap">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Код</th>
+                        <th>ФИО</th>
+                        <th>Телефон</th>
+                        <th>Заказов</th>
+                        <th>Дата регистрации</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td><a href="{% url 'manager_client_detail' client.pk %}" class="crm-link" style="font-weight: 700;">{{ client.client_code }}</a></td>
+                        <td>{{ client.first_name }} {{ client.last_name }}</td>
+                        <td>{{ client.phone_number }}</td>
+                        <td>{{ client.shipment_total }}</td>
+                        <td>{{ client.created_at|date:"d.m.Y" }}</td>
+                        <td>
+                            <a href="{% url 'manager_client_detail' client.pk %}" class="crm-btn crm-btn-outline crm-btn-sm">Открыть</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="crm-empty">
+            <div class="crm-empty-icon">&#128101;</div>
+            <div class="crm-empty-text">Клиенты не найдены</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

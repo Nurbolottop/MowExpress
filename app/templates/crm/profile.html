@@ -1,0 +1,34 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Профиль{% endblock %}
+{% block page_title %}Профиль менеджера{% endblock %}
+
+{% block content %}
+<div class="crm-card" style="max-width: 700px;">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Учетная запись</div>
+    </div>
+    <div class="crm-detail-grid">
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Логин</div>
+            <div class="crm-detail-value">{{ request.user.username }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Имя</div>
+            <div class="crm-detail-value">{{ request.user.first_name|default:"\u2014" }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Фамилия</div>
+            <div class="crm-detail-value">{{ request.user.last_name|default:"\u2014" }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Email</div>
+            <div class="crm-detail-value">{{ request.user.email|default:"\u2014" }}</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+        <a href="/admin/auth/user/{{ request.user.id }}/change/" class="crm-btn crm-btn-outline" target="_blank">Редактировать в Admin</a>
+    </div>
+</div>
+{% endblock %}

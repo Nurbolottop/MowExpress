@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+    <div class="container">
+        <h1>{{ site_name }} - Доставка из Кыргызстана в Россию</h1>
+        <p style="max-width: 600px; margin: 0 auto 2rem;">Надежная и быстрая доставка посылок и грузов. Отслеживайте свои отправления в реальном времени с помощью персонального кода клиента.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="{% url 'tracking' %}" class="btn-track" style="display: inline-block; width: auto; padding: 1rem 2rem; background: var(--success); text-decoration: none;">🔍 Отследить груз</a>
+            <a href="{% url 'manager_login' %}" class="btn-track" style="display: inline-block; width: auto; padding: 1rem 2rem; background: transparent; border: 2px solid white; text-decoration: none;">📁 Вход для менеджера</a>
+        </div>
+    </div>
+</section>
+
+<section class="container" style="padding: 4rem 0;">
+    <h2 style="text-align: center; margin-bottom: 3rem;">Как это работает?</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem;">
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+            <h3>Регистрация</h3>
+            <p>При оформлении груза вы получаете уникальный 3-4 значный код.</p>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
+            <h3>Подписка в TG</h3>
+            <p>Привяжите свой код в нашем Telegram боте и получайте уведомления.</p>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">✈️</div>
+            <h3>Доставка</h3>
+            <p>Следите за статусом в пути и узнайте первым, когда груз прибудет в РФ.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

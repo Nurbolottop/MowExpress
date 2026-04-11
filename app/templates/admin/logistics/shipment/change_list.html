@@ -1,0 +1,22 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block content_title %}
+    {{ block.super }}
+    {% if summary_metrics %}
+        <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin-bottom: 20px; border-radius: 4px; display: flex; gap: 40px;">
+            <div>
+                <strong style="color: #666; font-size: 0.9em; text-transform: uppercase;">Общий вес</strong>
+                <div style="font-size: 1.5em; font-weight: bold; color: #333;">{{ summary_metrics.total_weight }} кг</div>
+            </div>
+            <div>
+                <strong style="color: #666; font-size: 0.9em; text-transform: uppercase;">Общий доход</strong>
+                <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">{{ summary_metrics.total_revenue }} сом</div>
+            </div>
+            <div>
+                <strong style="color: #666; font-size: 0.9em; text-transform: uppercase;">Кол-во посылок</strong>
+                <div style="font-size: 1.5em; font-weight: bold; color: #007bff;">{{ summary_metrics.shipment_count }}</div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

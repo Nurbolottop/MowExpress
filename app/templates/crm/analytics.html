@@ -1,0 +1,130 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Аналитика{% endblock %}
+{% block page_title %}Аналитика и отчеты{% endblock %}
+
+{% block content %}
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Фильтр по периоду</div>
+    </div>
+    <form method="get" class="crm-filter-bar">
+        <div class="crm-form-group" style="margin-bottom: 0;">
+            <label class="crm-form-label">Дата от</label>
+            <input type="date" name="date_from" value="{{ date_from }}" class="crm-form-input">
+        </div>
+        <div class="crm-form-group" style="margin-bottom: 0;">
+            <label class="crm-form-label">Дата до</label>
+            <input type="date" name="date_to" value="{{ date_to }}" class="crm-form-input">
+        </div>
+        <div style="display: flex; align-items: flex-end; gap: 0.5rem; padding-top: 1.25rem;">
+            <button type="submit" class="crm-btn crm-btn-primary">Показать</button>
+            {% if date_from or date_to %}<a href="{% url 'manager_analytics' %}" class="crm-btn crm-btn-outline">Сброс</a>{% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="crm-stats-grid">
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon blue">&#128230;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Отправок</div>
+            <div class="crm-stat-value">{{ shipment_count }}</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon green">&#128176;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Доход</div>
+            <div class="crm-stat-value">{{ total_revenue }} <span style="font-size: 0.6em;">сом</span></div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon cyan">&#9878;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Общий вес</div>
+            <div class="crm-stat-value">{{ total_weight }} <span style="font-size: 0.6em;">кг</span></div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon purple">&#128101;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Всего клиентов</div>
+            <div class="crm-stat-value">{{ client_count }}</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon yellow">&#128640;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Активных клиентов</div>
+            <div class="crm-stat-value">{{ active_clients }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Распределение по статусам</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+        <div style="text-align: center; padding: 1rem; background: #dbeafe; border-radius: 8px;">
+            <div style="font-size: 2rem; font-weight: 800; color: #1e40af;">{{ status_counts.sent }}</div>
+            <div style="font-size: 0.85rem; color: #1e40af; margin-top: 0.25rem;">Отправлено</div>
+        </div>
+        <div style="text-align: center; padding: 1rem; background: #fef3c7; border-radius: 8px;">
+            <div style="font-size: 2rem; font-weight: 800; color: #92400e;">{{ status_counts.in_transit }}</div>
+            <div style="font-size: 0.85rem; color: #92400e; margin-top: 0.25rem;">В пути</div>
+        </div>
+        <div style="text-align: center; padding: 1rem; background: #dcfce7; border-radius: 8px;">
+            <div style="font-size: 2rem; font-weight: 800; color: #166534;">{{ status_counts.received }}</div>
+            <div style="font-size: 0.85rem; color: #166534; margin-top: 0.25rem;">Получено</div>
+        </div>
+        <div style="text-align: center; padding: 1rem; background: #f1f5f9; border-radius: 8px;">
+            <div style="font-size: 2rem; font-weight: 800; color: #475569;">{{ status_counts.issued }}</div>
+            <div style="font-size: 0.85rem; color: #475569; margin-top: 0.25rem;">Выдано</div>
+        </div>
+    </div>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Заказы за период</div>
+    </div>
+
+    {% if recent_shipments %}
+        <div class="crm-table-wrap">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Клиент</th>
+                        <th>Код</th>
+                        <th>Вес</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in recent_shipments %}
+                    <tr>
+                        <td><a href="{% url 'manager_shipment_detail' s.id %}" class="crm-link">{{ s.id }}</a></td>
+                        <td>{{ s.client.first_name }} {{ s.client.last_name }}</td>
+                        <td><a href="{% url 'manager_client_detail' s.client.pk %}" class="crm-link">{{ s.client.client_code }}</a></td>
+                        <td>{{ s.weight }} кг</td>
+                        <td>{{ s.total_price }} сом</td>
+                        <td><span class="crm-badge crm-badge-{{ s.status }}">{{ s.get_status_display }}</span></td>
+                        <td>{{ s.shipping_date|date:"d.m.Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="crm-empty">
+            <div class="crm-empty-icon">&#128200;</div>
+            <div class="crm-empty-text">Нет данных за выбранный период</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

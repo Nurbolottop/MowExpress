@@ -1,0 +1,92 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Дашборд{% endblock %}
+{% block page_title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="crm-stats-grid">
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon blue">&#128230;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Всего заказов</div>
+            <div class="crm-stat-value">{{ shipment_count }}</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon green">&#128176;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Общий доход</div>
+            <div class="crm-stat-value">{{ total_revenue }} <span style="font-size: 0.7em; font-weight: 500;">сом</span></div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon purple">&#128101;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Клиентов</div>
+            <div class="crm-stat-value">{{ client_count }}</div>
+        </div>
+    </div>
+    <div class="crm-stat-card">
+        <div class="crm-stat-icon yellow">&#128640;</div>
+        <div class="crm-stat-info">
+            <div class="crm-stat-label">Активных клиентов</div>
+            <div class="crm-stat-value">{{ active_clients_count }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Статусы заказов</div>
+    </div>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <span class="crm-badge crm-badge-sent">Отправлено: {{ status_counts.sent }}</span>
+        <span class="crm-badge crm-badge-in_transit">В пути: {{ status_counts.in_transit }}</span>
+        <span class="crm-badge crm-badge-received">Получено: {{ status_counts.received }}</span>
+        <span class="crm-badge crm-badge-issued">Выдано: {{ status_counts.issued }}</span>
+    </div>
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Последние заказы</div>
+        <a href="{% url 'manager_shipments' %}" class="crm-btn crm-btn-outline crm-btn-sm">Все заказы &#8594;</a>
+    </div>
+
+    {% if recent_shipments %}
+        <div class="crm-table-wrap">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Клиент</th>
+                        <th>Код</th>
+                        <th>Вес</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in recent_shipments %}
+                    <tr>
+                        <td><a href="{% url 'manager_shipment_detail' s.id %}" class="crm-link">{{ s.id }}</a></td>
+                        <td>{{ s.client.first_name }} {{ s.client.last_name }}</td>
+                        <td><a href="{% url 'manager_client_detail' s.client.pk %}" class="crm-link">{{ s.client.client_code }}</a></td>
+                        <td>{{ s.weight }} кг</td>
+                        <td>{{ s.total_price }} сом</td>
+                        <td><span class="crm-badge crm-badge-{{ s.status }}">{{ s.get_status_display }}</span></td>
+                        <td>{{ s.shipping_date|date:"d.m.Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="crm-empty">
+            <div class="crm-empty-icon">&#128230;</div>
+            <div class="crm-empty-text">Заказов пока нет</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

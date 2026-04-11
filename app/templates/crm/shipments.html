@@ -1,0 +1,92 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Заказы{% endblock %}
+{% block page_title %}Заказы{% endblock %}
+
+{% block content %}
+<!-- Filter + Actions bar -->
+<div class="crm-card">
+    <div class="crm-card-header" style="margin-bottom: 0.75rem;">
+        <div class="crm-card-title">Фильтры</div>
+        <a href="{% url 'manager_shipment_create' %}" class="crm-btn crm-btn-primary crm-btn-sm">+ Новый заказ</a>
+    </div>
+    <form method="get" class="crm-filter-bar">
+        <input type="text" name="code" value="{{ code_filter }}" placeholder="Код клиента" class="crm-form-input" style="min-width: 150px;">
+        <select name="status" class="crm-form-select">
+            <option value="">Все статусы</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="category" class="crm-form-select">
+            <option value="">Все категории</option>
+            {% for value, label in category_choices %}
+                <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="crm-btn crm-btn-primary">Фильтр</button>
+        {% if status_filter or code_filter or category_filter %}<a href="{% url 'manager_shipments' %}" class="crm-btn crm-btn-outline">Сброс</a>{% endif %}
+    </form>
+</div>
+
+<!-- Results header -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+    <div style="font-weight: 700; font-size: 0.95rem; color: var(--crm-text);">Найдено заказов: {{ shipments|length }}</div>
+</div>
+
+{% if shipments %}
+    <div class="crm-order-grid">
+        {% for s in shipments %}
+        <div class="crm-order-card">
+            <div class="crm-order-top">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="crm-order-id">#{{ s.id }}</span>
+                    <span class="crm-badge crm-badge-{{ s.status }}">{{ s.get_status_display }}</span>
+                </div>
+                <span class="crm-category-tag">{{ s.get_category_display }}</span>
+            </div>
+
+            <div class="crm-order-body">
+                <div class="crm-order-field">
+                    <span class="o-label">Клиент</span>
+                    <span class="o-value">{{ s.client.first_name }} {{ s.client.last_name }}</span>
+                </div>
+                <div class="crm-order-field">
+                    <span class="o-label">Код</span>
+                    <span class="o-value primary">{{ s.client.client_code }}</span>
+                </div>
+                <div class="crm-order-field" style="grid-column: 1 / -1;">
+                    <span class="o-label">№ Накладной</span>
+                    <span class="o-value" style="font-size: 0.85rem; letter-spacing: 0.03em;">{{ s.waybill_number }}</span>
+                </div>
+                <div class="crm-order-field">
+                    <span class="o-label">Вес</span>
+                    <span class="o-value">{{ s.weight }} кг</span>
+                </div>
+                <div class="crm-order-field">
+                    <span class="o-label">Сумма</span>
+                    <span class="o-value success">{{ s.total_price }} сом</span>
+                </div>
+                <div class="crm-order-field">
+                    <span class="o-label">Дата</span>
+                    <span class="o-value">{{ s.shipping_date|date:"d.m.Y" }}</span>
+                </div>
+            </div>
+
+            <div class="crm-order-actions">
+                <a href="{% url 'manager_shipment_detail' s.id %}" class="crm-btn crm-btn-primary crm-btn-sm">Открыть</a>
+                <a href="{% url 'manager_shipment_sticker' s.id %}" class="crm-btn crm-btn-outline crm-btn-sm" target="_blank">Самоклейка</a>
+                <a href="{% url 'manager_shipment_print' s.id %}" class="crm-btn crm-btn-outline crm-btn-sm" target="_blank">Накладной</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="crm-card">
+        <div class="crm-empty">
+            <div class="crm-empty-icon">&#128230;</div>
+            <div class="crm-empty-text">Заказы не найдены</div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

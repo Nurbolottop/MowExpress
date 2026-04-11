@@ -1,0 +1,549 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Новый заказ{% endblock %}
+{% block page_title %}Создание заказа{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-create {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 0.6rem;
+        align-items: start;
+    }
+
+    .oc-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .oc-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+    }
+
+    .oc-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6rem 0.85rem;
+        border-bottom: 1px solid #eef2f7;
+        background: #f8fafc;
+        flex-wrap: nowrap;
+    }
+
+    .oc-card-head .crm-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .oc-title {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .oc-subtitle {
+        margin-top: 0.1rem;
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+
+    .oc-body {
+        padding: 0.7rem;
+    }
+
+    .oc-base-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+    }
+
+    .oc-note {
+        margin-top: 0.6rem;
+        border: 1px solid #bfdbfe;
+        background: #eff6ff;
+        color: #1e3a8a;
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.74rem;
+        line-height: 1.4;
+    }
+
+    .oc-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .oc-row {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.6rem;
+        background: #fbfdff;
+    }
+
+    .oc-grid-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .oc-grid-items-row1 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+    }
+
+    .oc-grid-items-row2 {
+        display: grid;
+        grid-template-columns: 0.8fr 0.8fr 0.8fr 1fr auto;
+        gap: 0.6rem;
+        align-items: end;
+    }
+
+    .oc-grid-items-row2 .oc-remove {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .oc-grid-expenses {
+        display: grid;
+        grid-template-columns: 1.7fr .7fr .8fr auto;
+        gap: 0.4rem;
+        align-items: end;
+    }
+
+    .oc-remove {
+        height: 34px;
+        min-width: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .oc-side {
+        position: sticky;
+        top: 0.6rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .oc-metric {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid #eef2f7;
+        font-size: 0.76rem;
+        color: #334155;
+    }
+
+    .oc-metric:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .oc-metric strong {
+        font-size: 0.82rem;
+        color: #0f172a;
+    }
+
+    .oc-total {
+        margin-top: 0.5rem;
+        border-top: 1px solid #dbeafe;
+        padding-top: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 800;
+        color: #1d4ed8;
+        font-size: 0.82rem;
+    }
+
+    .oc-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: nowrap;
+    }
+
+    .oc-actions .crm-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Override form elements for compactness */
+    .oc-body .crm-form-label {
+        font-size: 0.7rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .oc-body .crm-form-input,
+    .oc-body .crm-form-select,
+    .oc-body .crm-form-textarea {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.78rem;
+        min-height: 32px;
+    }
+
+    .oc-body .crm-form-help {
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+    }
+
+    .oc-body .crm-btn {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.78rem;
+        min-height: 32px;
+    }
+
+    .oc-body .crm-btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        min-height: 36px;
+    }
+
+    /* Item rows - make more readable */
+    .oc-row .crm-form-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .oc-row .crm-form-input,
+    .oc-row .crm-form-select {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.85rem;
+        min-height: 38px;
+    }
+
+    .oc-row {
+        padding: 0.85rem;
+    }
+
+    .oc-grid-items {
+        gap: 0.6rem;
+    }
+
+    .oc-grid-expenses {
+        gap: 0.6rem;
+    }
+
+    @media (max-width: 1160px) {
+        .order-create { grid-template-columns: 1fr; }
+        .oc-side { position: static; }
+    }
+
+    @media (max-width: 900px) {
+        .oc-base-grid,
+        .oc-grid-items,
+        .oc-grid-expenses { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post" id="order-create-form">
+    {% csrf_token %}
+
+    <div class="order-create">
+        <div class="oc-main">
+            <div class="oc-card">
+                <div class="oc-card-head">
+                    <div>
+                        <div class="oc-title">Основные данные</div>
+                        <div class="oc-subtitle">Клиент и общая категория заказа</div>
+                    </div>
+                </div>
+                <div class="oc-body">
+                    <div class="oc-base-grid">
+                        <div class="crm-form-group" style="margin-bottom: 0;">
+                            <label class="crm-form-label" for="id_client_code">Код клиента</label>
+                            {{ form.client_code }}
+                            <div class="crm-form-help">Введите код клиента (3-4 цифры)</div>
+                            {% if form.client_code.errors %}<div class="crm-form-error">{{ form.client_code.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="crm-form-group" style="margin-bottom: 0;">
+                            <label class="crm-form-label" for="id_category">Категория посылки</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}<div class="crm-form-error">{{ form.category.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="crm-form-group" style="margin-bottom: 0;">
+                            <label class="crm-form-label" for="id_delivery_address">Город назначения</label>
+                            {{ form.delivery_address }}
+                            {% if form.delivery_address.errors %}<div class="crm-form-error">{{ form.delivery_address.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="oc-note">
+                        Один заказ может содержать несколько товарных позиций и отдельные дополнительные расходы.
+                        Итоги справа пересчитываются автоматически при вводе.
+                    </div>
+                </div>
+            </div>
+
+            <div class="oc-card">
+                <div class="oc-card-head">
+                    <div>
+                        <div class="oc-title">Товарные позиции</div>
+                        <div class="oc-subtitle">Количество мест, шт, вес и стоимость услуги</div>
+                    </div>
+                    <button type="button" class="crm-btn crm-btn-outline crm-btn-sm" id="add-item-row">+ Товар</button>
+                </div>
+                <div class="oc-body">
+                    <div id="item-rows" class="oc-list">
+                        <div class="oc-row item-row">
+                            <div class="oc-grid-items-row1">
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Услуга</label>
+                                    <input type="text" name="item_service_name[]" class="crm-form-input" value="Услуга по доставке товара" required>
+                                </div>
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Товар клиента</label>
+                                    <input type="text" name="item_product_name[]" class="crm-form-input" placeholder="Например: Женские платья" required>
+                                </div>
+                            </div>
+                            <div class="oc-grid-items-row2">
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Мест</label>
+                                    <input type="number" name="item_places_count[]" class="crm-form-input" min="1" value="1" required>
+                                </div>
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Шт.</label>
+                                    <input type="number" name="item_units_count[]" class="crm-form-input" min="1" value="1" required>
+                                </div>
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Вес, кг</label>
+                                    <input type="number" name="item_weight[]" class="crm-form-input" step="0.01" min="0" required>
+                                </div>
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Цена услуги</label>
+                                    <input type="number" name="item_service_price[]" class="crm-form-input" step="0.01" min="0" required>
+                                </div>
+                                <button type="button" class="crm-btn crm-btn-danger crm-btn-sm oc-remove remove-item-row">×</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="oc-card">
+                <div class="oc-card-head">
+                    <div>
+                        <div class="oc-title">Дополнительные расходы</div>
+                        <div class="oc-subtitle">Мешок, погрузка-выгрузка, упаковка и др.</div>
+                    </div>
+                    <button type="button" class="crm-btn crm-btn-outline crm-btn-sm" id="add-expense-row">+ Расход</button>
+                </div>
+                <div class="oc-body">
+                    <div id="expense-rows" class="oc-list">
+                        <div class="oc-row expense-row">
+                            <div class="oc-grid-expenses">
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Номенклатура</label>
+                                    <input type="text" name="expense_name[]" class="crm-form-input" placeholder="Например: Средний мешок">
+                                </div>
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Кол-во</label>
+                                    <input type="number" name="expense_quantity[]" class="crm-form-input" min="1" value="1">
+                                </div>
+                                <div class="crm-form-group" style="margin-bottom: 0;">
+                                    <label class="crm-form-label">Цена</label>
+                                    <input type="number" name="expense_price[]" class="crm-form-input" step="0.01" min="0">
+                                </div>
+                                <button type="button" class="crm-btn crm-btn-danger crm-btn-sm oc-remove remove-expense-row">×</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="oc-card">
+                <div class="oc-card-head">
+                    <div>
+                        <div class="oc-title">Примечания</div>
+                        <div class="oc-subtitle">Внутренний комментарий менеджера</div>
+                    </div>
+                </div>
+                <div class="oc-body">
+                    <div class="crm-form-group" style="margin-bottom: 0;">
+                        {{ form.notes }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="oc-side">
+            <div class="oc-card">
+                <div class="oc-card-head">
+                    <div>
+                        <div class="oc-title">Итоги заказа</div>
+                        <div class="oc-subtitle">Предварительный расчёт</div>
+                    </div>
+                </div>
+                <div class="oc-body">
+                    <div class="oc-metric"><span>Позиции товаров</span><strong id="sum-items-count">1</strong></div>
+                    <div class="oc-metric"><span>Общий вес</span><strong id="sum-weight">0.00 кг</strong></div>
+                    <div class="oc-metric"><span>Сумма товаров</span><strong id="sum-items-amount">0.00 сом</strong></div>
+                    <div class="oc-metric"><span>Доп. расходы</span><strong id="sum-expenses">0.00 сом</strong></div>
+                    <div class="oc-total"><span>К оплате</span><span id="sum-grand-total">0.00 сом</span></div>
+                </div>
+            </div>
+
+            <div class="oc-card">
+                <div class="oc-body">
+                    <div class="oc-actions">
+                        <button type="submit" class="crm-btn crm-btn-primary crm-btn-lg" form="order-create-form">Создать заказ</button>
+                        <a href="{% url 'manager_shipments' %}" class="crm-btn crm-btn-outline crm-btn-lg">Отмена</a>
+                    </div>
+                    <div class="crm-form-help" style="margin-top: 0.8rem;">
+                        После сохранения заказу автоматически присвоится номер накладной.
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const itemRows = document.getElementById('item-rows');
+    const expenseRows = document.getElementById('expense-rows');
+    let priceTiers = [];
+
+    fetch('{% url "api_price_tiers" %}')
+        .then(r => r.json())
+        .then(data => { priceTiers = data; })
+        .catch(() => {});
+
+    function parseNumber(value) {
+        const n = parseFloat(String(value || '').replace(',', '.'));
+        return Number.isFinite(n) ? n : 0;
+    }
+
+    function getPriceForWeight(weight) {
+        if (!priceTiers.length || weight <= 0) return null;
+        for (let i = 0; i < priceTiers.length; i++) {
+            if (weight <= parseFloat(priceTiers[i].max_weight)) {
+                return parseFloat(priceTiers[i].price_per_kg);
+            }
+        }
+        return parseFloat(priceTiers[priceTiers.length - 1].price_per_kg);
+    }
+
+    function onWeightChange(e) {
+        const input = e.target;
+        if (input.name !== 'item_weight[]') return;
+        const weight = parseNumber(input.value);
+        const price = getPriceForWeight(weight);
+        if (price !== null) {
+            const row = input.closest('.item-row');
+            const priceInput = row.querySelector('input[name="item_service_price[]"]');
+            priceInput.value = price;
+        }
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const itemList = Array.from(itemRows.querySelectorAll('.item-row'));
+        const expenseList = Array.from(expenseRows.querySelectorAll('.expense-row'));
+
+        let totalWeight = 0;
+        let itemsAmount = 0;
+        let expensesAmount = 0;
+
+        itemList.forEach((row) => {
+            const weight = parseNumber(row.querySelector('input[name="item_weight[]"]').value);
+            const price = parseNumber(row.querySelector('input[name="item_service_price[]"]').value);
+            totalWeight += weight;
+            itemsAmount += weight * price;
+        });
+
+        expenseList.forEach((row) => {
+            const name = (row.querySelector('input[name="expense_name[]"]').value || '').trim();
+            const qty = parseNumber(row.querySelector('input[name="expense_quantity[]"]').value);
+            const price = parseNumber(row.querySelector('input[name="expense_price[]"]').value);
+            if (name || qty || price) {
+                expensesAmount += qty * price;
+            }
+        });
+
+        const grandTotal = itemsAmount + expensesAmount;
+
+        document.getElementById('sum-items-count').textContent = itemList.length;
+        document.getElementById('sum-weight').textContent = `${totalWeight.toFixed(2)} кг`;
+        document.getElementById('sum-items-amount').textContent = `${itemsAmount.toFixed(2)} сом`;
+        document.getElementById('sum-expenses').textContent = `${expensesAmount.toFixed(2)} сом`;
+        document.getElementById('sum-grand-total').textContent = `${grandTotal.toFixed(2)} сом`;
+    }
+
+    function bindInputListeners(scope) {
+        scope.querySelectorAll('input').forEach((input) => {
+            input.addEventListener('input', updateSummary);
+            if (input.name === 'item_weight[]') {
+                input.addEventListener('input', onWeightChange);
+            }
+        });
+    }
+
+    document.getElementById('add-item-row').addEventListener('click', function () {
+        const clone = itemRows.querySelector('.item-row').cloneNode(true);
+        clone.querySelectorAll('input').forEach((input, idx) => {
+            if (idx === 0) {
+                input.value = 'Услуга по доставке товара';
+            } else if (input.type === 'number') {
+                input.value = input.name.includes('places') || input.name.includes('units') ? '1' : '';
+            } else {
+                input.value = '';
+            }
+        });
+        itemRows.appendChild(clone);
+        bindInputListeners(clone);
+        updateSummary();
+    });
+
+    document.getElementById('add-expense-row').addEventListener('click', function () {
+        const clone = expenseRows.querySelector('.expense-row').cloneNode(true);
+        clone.querySelectorAll('input').forEach((input, idx) => {
+            input.value = idx === 1 ? '1' : '';
+        });
+        expenseRows.appendChild(clone);
+        bindInputListeners(clone);
+        updateSummary();
+    });
+
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-item-row')) {
+            const rows = itemRows.querySelectorAll('.item-row');
+            if (rows.length > 1) {
+                event.target.closest('.item-row').remove();
+                updateSummary();
+            }
+        }
+
+        if (event.target.classList.contains('remove-expense-row')) {
+            const rows = expenseRows.querySelectorAll('.expense-row');
+            if (rows.length > 1) {
+                event.target.closest('.expense-row').remove();
+            } else {
+                event.target.closest('.expense-row').querySelectorAll('input').forEach((input, idx) => {
+                    input.value = idx === 1 ? '1' : '';
+                });
+            }
+            updateSummary();
+        }
+    });
+
+    bindInputListeners(itemRows);
+    bindInputListeners(expenseRows);
+    updateSummary();
+</script>
+{% endblock %}

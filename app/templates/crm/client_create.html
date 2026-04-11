@@ -1,0 +1,48 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Новый клиент{% endblock %}
+{% block page_title %}Создание клиента{% endblock %}
+
+{% block content %}
+<div class="crm-card" style="max-width: 600px;">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Новый клиент</div>
+        <a href="{% url 'manager_clients' %}" class="crm-btn crm-btn-outline crm-btn-sm">&#8592; Все клиенты</a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="crm-form-row">
+            <div class="crm-form-group">
+                <label class="crm-form-label" for="id_first_name">Имя</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                    <div class="crm-form-error">{{ form.first_name.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <div class="crm-form-group">
+                <label class="crm-form-label" for="id_last_name">Фамилия</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                    <div class="crm-form-error">{{ form.last_name.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="crm-form-group">
+            <label class="crm-form-label" for="id_phone_number">Номер телефона</label>
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}
+                <div class="crm-form-error">{{ form.phone_number.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button type="submit" class="crm-btn crm-btn-primary crm-btn-lg">Создать клиента</button>
+            <a href="{% url 'manager_clients' %}" class="crm-btn crm-btn-outline crm-btn-lg">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

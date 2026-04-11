@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в CRM | {{ site_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/crm.css' %}">
+</head>
+<body>
+    <div class="crm-login-wrapper">
+        <div class="crm-login-card">
+            <div class="crm-login-title">{{ site_name }} CRM</div>
+            <div class="crm-login-subtitle">Войдите в панель менеджера</div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="crm-alert crm-alert-error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="crm-alert crm-alert-error">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="crm-form-group">
+                    <label class="crm-form-label" for="id_username">Логин</label>
+                    <input type="text" name="username" id="id_username" class="crm-form-input" value="{{ form.username.value|default:'' }}" placeholder="Имя пользователя" required autofocus>
+                </div>
+
+                <div class="crm-form-group">
+                    <label class="crm-form-label" for="id_password">Пароль</label>
+                    <input type="password" name="password" id="id_password" class="crm-form-input" placeholder="Введите пароль" required>
+                </div>
+
+                <button type="submit" class="crm-login-btn">Войти</button>
+            </form>
+
+            <div style="margin-top: 1.25rem; text-align: center;">
+                <a href="/" style="color: var(--crm-text-light); font-size: 0.88rem; text-decoration: none;">&#8592; Вернуться на сайт</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

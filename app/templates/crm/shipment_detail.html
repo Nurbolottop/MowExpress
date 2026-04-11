@@ -1,0 +1,180 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Заказ #{{ shipment.id }}{% endblock %}
+{% block page_title %}Карточка заказа #{{ shipment.id }}{% endblock %}
+
+{% block content %}
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">
+            Заказ #{{ shipment.id }}
+            <span class="crm-badge crm-badge-{{ shipment.status }}" style="margin-left: 0.5rem;">{{ shipment.get_status_display }}</span>
+        </div>
+        <div style="display: flex; gap: 0.35rem; flex-wrap: nowrap; white-space: nowrap;">
+            <a href="{% url 'manager_shipment_edit' shipment.id %}" class="crm-btn crm-btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;">&#9998; Редактировать</a>
+            <a href="{% url 'manager_shipment_status' shipment.id %}" class="crm-btn crm-btn-warning" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;">Статус</a>
+            <a href="{% url 'manager_shipment_sticker' shipment.id %}" class="crm-btn crm-btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;" target="_blank">Самоклейка</a>
+            <a href="{% url 'manager_shipment_print' shipment.id %}" class="crm-btn crm-btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;" target="_blank">Накладная</a>
+            <a href="{% url 'manager_shipments' %}" class="crm-btn crm-btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; min-height: auto;">&#8592; Заказы</a>
+        </div>
+    </div>
+
+    <div class="crm-detail-grid">
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Клиент</div>
+            <div class="crm-detail-value">
+                <a href="{% url 'manager_client_detail' shipment.client.pk %}" class="crm-link">
+                    {{ shipment.client.first_name }} {{ shipment.client.last_name }}
+                </a>
+            </div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Код клиента</div>
+            <div class="crm-detail-value" style="color: var(--crm-primary); font-weight: 700;">{{ shipment.client.client_code }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">№ Накладной</div>
+            <div class="crm-detail-value" style="font-weight: 800; letter-spacing: 0.02em;">{{ shipment.waybill_number }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Категория</div>
+            <div class="crm-detail-value">{{ shipment.get_category_display }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Город назначения</div>
+            <div class="crm-detail-value">{{ shipment.delivery_address|default:"—" }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Вес</div>
+            <div class="crm-detail-value">{{ shipment.weight }} кг</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Стоимость за кг</div>
+            <div class="crm-detail-value">{{ shipment.price_per_kg }} сом</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Итоговая сумма</div>
+            <div class="crm-detail-value" style="font-size: 1.3rem; color: var(--crm-success);">{{ shipment.total_price }} сом</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Дата отправки</div>
+            <div class="crm-detail-value">{{ shipment.shipping_date|date:"d.m.Y" }}</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Последнее обновление</div>
+            <div class="crm-detail-value">{{ shipment.updated_at|date:"d.m.Y H:i" }}</div>
+        </div>
+    </div>
+
+    {% if shipment.notes %}
+    <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--crm-border);">
+        <div class="crm-detail-label" style="margin-bottom: 0.35rem;">Примечания</div>
+        <div style="color: var(--crm-text); font-size: 0.95rem;">{{ shipment.notes }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Товары в заказе</div>
+    </div>
+
+    {% if shipment.items.all %}
+        <div class="crm-table-wrap">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Услуга</th>
+                        <th>Товар</th>
+                        <th>Мест</th>
+                        <th>Шт.</th>
+                        <th>Вес</th>
+                        <th>Стоимость</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in shipment.items.all %}
+                    <tr>
+                        <td>{{ item.service_name }}</td>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.places_count }}</td>
+                        <td>{{ item.units_count }}</td>
+                        <td>{{ item.weight }} кг</td>
+                        <td>{{ item.service_price }} сом</td>
+                        <td>{{ item.total_amount }} сом</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="crm-empty" style="padding: 1.5rem;">
+            <div class="crm-empty-text">Позиции заказа отсутствуют</div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Дополнительные расходы</div>
+    </div>
+
+    {% if shipment.expenses.all %}
+        <div class="crm-table-wrap">
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Номенклатура</th>
+                        <th>Количество</th>
+                        <th>Цена</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in shipment.expenses.all %}
+                    <tr>
+                        <td>{{ expense.name }}</td>
+                        <td>{{ expense.quantity }}</td>
+                        <td>{{ expense.price }} сом</td>
+                        <td>{{ expense.total_amount }} сом</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="crm-empty" style="padding: 1.5rem;">
+            <div class="crm-empty-text">Дополнительных расходов нет</div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="crm-card">
+    <div class="crm-card-header">
+        <div class="crm-card-title">История изменений статуса</div>
+    </div>
+
+    {% if history %}
+        <div class="crm-timeline">
+            {% for h in history %}
+            <div class="crm-timeline-item">
+                <div class="crm-timeline-dot"></div>
+                <div class="crm-timeline-date">{{ h.changed_at|date:"d.m.Y H:i" }} &#8212; {{ h.changed_by.username|default:"система" }}</div>
+                <div class="crm-timeline-text">
+                    {% if h.old_status %}
+                        {{ h.get_old_status_display }} &#8594; <strong>{{ h.get_new_status_display }}</strong>
+                    {% else %}
+                        Заказ создан &#8594; <strong>{{ h.get_new_status_display }}</strong>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="crm-empty" style="padding: 1.5rem;">
+            <div class="crm-empty-text">История изменений пуста</div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM{% endblock %} | {{ site_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/crm.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="crm-layout">
+        <aside class="crm-sidebar">
+            <a href="{% url 'manager_dashboard' %}" class="crm-sidebar-logo">{{ site_name }} CRM</a>
+
+            <div class="crm-sidebar-section">
+                <div class="crm-sidebar-section-title">Главное</div>
+                <ul class="crm-sidebar-nav">
+                    <li><a href="{% url 'manager_dashboard' %}" class="{% if active_page == 'dashboard' %}active{% endif %}"><span class="nav-icon">&#128202;</span> Дашборд</a></li>
+                    <li><a href="{% url 'manager_analytics' %}" class="{% if active_page == 'analytics' %}active{% endif %}"><span class="nav-icon">&#128200;</span> Аналитика</a></li>
+                </ul>
+            </div>
+
+            <div class="crm-sidebar-section">
+                <div class="crm-sidebar-section-title">Клиенты</div>
+                <ul class="crm-sidebar-nav">
+                    <li><a href="{% url 'manager_clients' %}" class="{% if active_page == 'clients' %}active{% endif %}"><span class="nav-icon">&#128101;</span> Все клиенты</a></li>
+                    <li><a href="{% url 'manager_client_create' %}" class="{% if active_page == 'client_create' %}active{% endif %}"><span class="nav-icon">&#10133;</span> Новый клиент</a></li>
+                </ul>
+            </div>
+
+            <div class="crm-sidebar-section">
+                <div class="crm-sidebar-section-title">Заказы</div>
+                <ul class="crm-sidebar-nav">
+                    <li><a href="{% url 'manager_shipments' %}" class="{% if active_page == 'shipments' %}active{% endif %}"><span class="nav-icon">&#128230;</span> Все заказы</a></li>
+                    <li><a href="{% url 'manager_shipment_create' %}" class="{% if active_page == 'shipment_create' %}active{% endif %}"><span class="nav-icon">&#10133;</span> Новый заказ</a></li>
+                </ul>
+            </div>
+
+            <div class="crm-sidebar-section">
+                <div class="crm-sidebar-section-title">Система</div>
+                <ul class="crm-sidebar-nav">
+                    <li><a href="{% url 'manager_settings' %}" class="{% if active_page == 'settings' %}active{% endif %}"><span class="nav-icon">&#9881;</span> Настройки</a></li>
+                </ul>
+            </div>
+
+            <div class="crm-sidebar-footer">
+                <a href="{% url 'manager_profile' %}"><span class="nav-icon">&#9881;</span> {{ request.user.username }}</a>
+            </div>
+        </aside>
+
+        <main class="crm-main">
+            <header class="crm-topbar">
+                <div class="crm-topbar-left">
+                    <div class="crm-topbar-title">{% block page_title %}CRM{% endblock %}</div>
+                    <div class="crm-topbar-breadcrumb">{% block breadcrumb %}{% endblock %}</div>
+                </div>
+                <div class="crm-topbar-actions">
+                    <div class="crm-topbar-avatar">{{ request.user.username|make_list|first }}</div>
+                    <span class="crm-topbar-user">{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <a href="{% url 'manager_logout' %}" class="crm-btn crm-btn-outline crm-btn-sm">Выйти</a>
+                </div>
+            </header>
+
+            <div class="crm-content">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="crm-alert {% if message.tags == 'success' %}crm-alert-success{% elif message.tags == 'error' %}crm-alert-error{% else %}crm-alert-info{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

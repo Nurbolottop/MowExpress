@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_name }} - Система отслеживания{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">📦 {{ site_name }}</a>
+            <div class="nav-links">
+                <a href="/tracking/">Отслеживание</a>
+                {% if request.user.is_authenticated and request.user.is_staff %}
+                    <a href="{% url 'manager_dashboard' %}">CRM</a>
+                    <a href="{% url 'manager_profile' %}">Профиль</a>
+                    <a href="{% url 'manager_logout' %}" class="btn-admin">Выйти</a>
+                {% else %}
+                    <a href="{% url 'manager_login' %}" class="btn-admin">Вход менеджера</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 {{ site_name }} - Доставка из Кыргызстана в Россию</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

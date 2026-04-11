@@ -1,0 +1,39 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Изменение статуса #{{ shipment.id }}{% endblock %}
+{% block page_title %}Изменение статуса заказа{% endblock %}
+
+{% block content %}
+<div class="crm-card" style="max-width: 550px;">
+    <div class="crm-card-header">
+        <div class="crm-card-title">Заказ #{{ shipment.id }}</div>
+        <a href="{% url 'manager_shipment_detail' shipment.id %}" class="crm-btn crm-btn-outline crm-btn-sm">&#8592; Назад</a>
+    </div>
+
+    <div class="crm-detail-grid" style="margin-bottom: 1.5rem;">
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Клиент</div>
+            <div class="crm-detail-value">{{ shipment.client.first_name }} {{ shipment.client.last_name }} ({{ shipment.client.client_code }})</div>
+        </div>
+        <div class="crm-detail-item">
+            <div class="crm-detail-label">Текущий статус</div>
+            <div class="crm-detail-value">
+                <span class="crm-badge crm-badge-{{ shipment.status }}">{{ shipment.get_status_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="crm-form-group">
+            <label class="crm-form-label" for="id_status">Новый статус</label>
+            {{ form.status }}
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button type="submit" class="crm-btn crm-btn-warning crm-btn-lg">Обновить статус</button>
+            <a href="{% url 'manager_shipment_detail' shipment.id %}" class="crm-btn crm-btn-outline crm-btn-lg">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ site_name }} - Отслеживание{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <h1>Отслеживание отправки</h1>
+        <p>Введите код клиента или номер накладной для отслеживания.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="track-form-container">
+        <form method="GET" action="{% url 'tracking' %}">
+            <div class="form-group">
+                <label for="code">Код клиента / № накладной</label>
+                <input type="text" name="code" id="code" value="{{ request.GET.code|default:'' }}" placeholder="Код клиента или номер накладной" required>
+            </div>
+            <button type="submit" class="btn-track">Найти отправку</button>
+        </form>
+        {% if error %}<p style="color: red; margin-top: 1rem;">{{ error }}</p>{% endif %}
+    </div>
+
+    {% if shipments %}
+        <div style="margin-bottom: 2rem;">
+            <h2>История ваших отправок</h2>
+            <p>Клиент: <strong>{{ client.first_name }} {{ client.last_name }}</strong> (Код: {{ client.client_code }})</p>
+        </div>
+
+        {% for shipment in shipments %}
+            <div class="shipment-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <h3>Заказ №{{ shipment.id }}</h3>
+                        <div style="font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem;">Накладная: <strong>{{ shipment.waybill_number }}</strong></div>
+                    </div>
+                    <span class="status-badge status-{{ shipment.status }}">{{ shipment.get_status_display }}</span>
+                </div>
+                <div class="dashboard-grid">
+                    <div>
+                        <span class="label">Вес</span>
+                        <div class="value">{{ shipment.weight }} кг</div>
+                    </div>
+                    <div>
+                        <span class="label">Стоимость за кг</span>
+                        <div class="value">{{ shipment.price_per_kg }} сом</div>
+                    </div>
+                    <div>
+                        <span class="label">Итого</span>
+                        <div class="value">{{ shipment.total_price }} сом</div>
+                    </div>
+                    <div>
+                        <span class="label">Дата</span>
+                        <div class="value">{{ shipment.shipping_date|date:"d.m.Y" }}</div>
+                    </div>
+                </div>
+                {% if shipment.notes %}
+                <div style="margin-top: 1rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; color: var(--muted);">
+                    <strong>Примечание:</strong> {{ shipment.notes }}
+                </div>
+                {% endif %}
+                <div style="margin-top: 1rem; text-align: right;">
+                    <a href="{% url 'shipment_print' shipment.id %}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">Скачать накладной лист →</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% elif request.GET.code %}
+        <div style="text-align: center; margin-top: 2rem;">
+            <p>По коду "{{ request.GET.code }}" отправки не найдены.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
