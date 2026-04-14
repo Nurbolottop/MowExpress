@@ -1,75 +1,613 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ site_name }} - Отслеживание{% endblock %}
+{% block title %}{{ site_name }} - Отслеживание отправки{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+        --orange: #ff6b35;
+        --coral: #ff4757;
+        --sky: #00b4d8;
+        --teal: #0096c7;
+        --green: #06d6a0;
+        --purple: #7c3aed;
+        --yellow: #ffd166;
+        --pink: #ef476f;
+        --bg: #f0f4ff;
+        --white: #ffffff;
+        --text: #1a1a2e;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    /* ---- NAVBAR ---- */
+    .navbar {
+        background: #ffffff !important;
+        border-bottom: 3px solid transparent !important;
+        background-clip: padding-box !important;
+        border-image: none !important;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important;
+        padding: 0.9rem 0 !important;
+        position: relative;
+    }
+
+    .navbar::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #ff6b35, #ff4757, #7c3aed, #00b4d8, #06d6a0);
+    }
+
+    .navbar .logo {
+        background: linear-gradient(135deg, #ff6b35, #ff4757) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        font-weight: 900 !important;
+        font-size: 1.5rem !important;
+    }
+
+    .navbar .nav-links a {
+        color: var(--text) !important;
+        font-weight: 600;
+        opacity: 1 !important;
+        transition: color 0.2s;
+    }
+
+    .navbar .nav-links a:hover { color: var(--orange) !important; }
+
+    .btn-admin {
+        background: linear-gradient(135deg, var(--orange), var(--coral)) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1.2rem !important;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+        background: var(--text) !important;
+        color: rgba(255,255,255,0.6) !important;
+        border-top: none !important;
+        padding: 2rem 0 !important;
+    }
+
+    /* ========== HERO ========== */
+    .tracking-hero {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff4757 30%, #7c3aed 65%, #00b4d8 100%);
+        padding: 5rem 0 9rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tracking-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .tracking-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.35);
+        border-radius: 50px;
+        padding: 0.45rem 1.2rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: white;
+        margin-bottom: 1.5rem;
+    }
+
+    .tracking-hero-badge span {
+        width: 8px; height: 8px;
+        background: #06d6a0;
+        border-radius: 50%;
+        display: inline-block;
+        animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    .tracking-hero h1 {
+        font-size: clamp(2.2rem, 5vw, 3.8rem);
+        font-weight: 900;
+        color: white;
+        margin-bottom: 1rem;
+        line-height: 1.15;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .tracking-hero p {
+        color: rgba(255,255,255,0.85);
+        font-size: 1.1rem;
+        max-width: 480px;
+        margin: 0 auto;
+        font-weight: 400;
+    }
+
+    /* ========== SEARCH CARD ========== */
+    .search-wrapper {
+        max-width: 560px;
+        margin: -6rem auto 3rem;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .search-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+
+    .search-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-icon-box {
+        width: 52px; height: 52px;
+        background: linear-gradient(135deg, #ff6b35, #ff4757);
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        box-shadow: 0 8px 16px rgba(255,107,53,0.35);
+    }
+
+    .search-card-title {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .search-card-sub {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+    }
+
+    .input-label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--orange);
+        margin-bottom: 0.5rem;
+    }
+
+    .input-row {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .track-input {
+        flex: 1;
+        padding: 0.9rem 1.1rem;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--text);
+        transition: all 0.25s;
+        outline: none;
+        background: #fafafa;
+    }
+
+    .track-input:focus {
+        border-color: var(--orange);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(255,107,53,0.12);
+    }
+
+    .btn-find {
+        padding: 0.9rem 1.5rem;
+        background: linear-gradient(135deg, #ff6b35, #ff4757);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.25s;
+        white-space: nowrap;
+        box-shadow: 0 6px 16px rgba(255,71,87,0.35);
+    }
+
+    .btn-find:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(255,71,87,0.4);
+    }
+
+    .error-msg {
+        margin-top: 1rem;
+        background: #fff0f0;
+        border: 1.5px solid #fca5a5;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        color: #dc2626;
+        font-size: 0.88rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* ========== RESULTS ========== */
+    .results-area {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 1.5rem 5rem;
+    }
+
+    .results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .results-title {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: var(--text);
+    }
+
+    .client-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: 50px;
+        padding: 0.4rem 1rem 0.4rem 0.4rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .client-avatar {
+        width: 30px; height: 30px;
+        background: linear-gradient(135deg, #7c3aed, #00b4d8);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 800;
+    }
+
+    /* ========== SHIPMENT CARD ========== */
+    .s-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1.5px solid #f0f0f0;
+        transition: all 0.25s ease;
+        animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .s-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+        border-color: transparent;
+    }
+
+    .s-card-top {
+        height: 5px;
+    }
+
+    .top-orange { background: linear-gradient(90deg, #ff6b35, #ff4757); }
+    .top-teal   { background: linear-gradient(90deg, #00b4d8, #06d6a0); }
+    .top-purple { background: linear-gradient(90deg, #7c3aed, #a855f7); }
+    .top-yellow { background: linear-gradient(90deg, #ffd166, #ff9f1c); }
+
+    .s-card-body {
+        padding: 1.5rem 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .s-card-id {
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+    }
+
+    .s-card-waybill {
+        font-size: 0.78rem;
+        color: var(--muted);
+        font-weight: 500;
+        letter-spacing: 0.03em;
+    }
+
+    /* Status pills */
+    .s-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 1.1rem;
+        border-radius: 50px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        flex-shrink: 0;
+    }
+
+    .s-pill::before {
+        content: '';
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .pill-sent     { background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; }
+    .pill-transit  { background: #fffbeb; color: #d97706; border: 1.5px solid #fde68a; }
+    .pill-received { background: #f0fdf4; color: #16a34a; border: 1.5px solid #bbf7d0; }
+    .pill-issued   { background: #f9fafb; color: #6b7280; border: 1.5px solid #e5e7eb; }
+
+    /* Stats */
+    .s-card-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        background: #f8f9ff;
+        border-top: 1.5px solid #f0f0f0;
+        border-bottom: 1.5px solid #f0f0f0;
+    }
+
+    .stat-cell {
+        padding: 1.1rem 1.75rem;
+        text-align: center;
+        border-right: 1.5px solid #f0f0f0;
+    }
+
+    .stat-cell:last-child { border-right: none; }
+
+    .stat-lbl {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 0.35rem;
+    }
+
+    .stat-val {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    .stat-val.big {
+        font-size: 1.2rem;
+        background: linear-gradient(135deg, #ff6b35, #ff4757);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .s-card-footer {
+        padding: 0.9rem 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        background: white;
+    }
+
+    .s-card-date {
+        font-size: 0.83rem;
+        color: var(--muted);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .s-card-notes {
+        font-size: 0.83rem;
+        color: #92400e;
+        background: #fffbeb;
+        padding: 0.6rem 1.75rem;
+        border-top: 1px solid #fde68a;
+        font-style: italic;
+    }
+
+    .btn-waybill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.2rem;
+        background: linear-gradient(135deg, #ff6b35, #ff4757);
+        color: white;
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.25s;
+        box-shadow: 0 4px 12px rgba(255,71,87,0.25);
+    }
+
+    .btn-waybill:hover {
+        transform: translateX(3px);
+        box-shadow: 0 8px 20px rgba(255,71,87,0.35);
+        color: white;
+    }
+
+    /* ========== EMPTY STATE ========== */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .empty-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .empty-text { color: var(--muted); font-size: 0.95rem; }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="hero">
+
+<!-- HERO -->
+<section class="tracking-hero">
     <div class="container">
-        <h1>Отслеживание отправки</h1>
-        <p>Введите код клиента или номер накладной для отслеживания.</p>
+        <div class="tracking-hero-badge">
+            <span></span> Система отслеживания грузов
+        </div>
+        <h1>🚀 Отследить свой груз</h1>
+        <p>Введите код клиента или номер накладной — и узнайте, где ваш груз прямо сейчас</p>
     </div>
 </section>
 
-<div class="container">
-    <div class="track-form-container">
-        <form method="GET" action="{% url 'tracking' %}">
-            <div class="form-group">
-                <label for="code">Код клиента / № накладной</label>
-                <input type="text" name="code" id="code" value="{{ request.GET.code|default:'' }}" placeholder="Код клиента или номер накладной" required>
+<!-- SEARCH CARD -->
+<div class="search-wrapper">
+    <div class="search-card">
+        <div class="search-card-header">
+            <div class="search-icon-box">🔍</div>
+            <div>
+                <div class="search-card-title">Поиск отправки</div>
+                <div class="search-card-sub">Код клиента или № накладной</div>
             </div>
-            <button type="submit" class="btn-track">Найти отправку</button>
+        </div>
+
+        <form method="GET" action="{% url 'tracking' %}">
+            <label class="input-label" for="code">Введите код</label>
+            <div class="input-row">
+                <input
+                    class="track-input"
+                    type="text"
+                    name="code"
+                    id="code"
+                    value="{{ request.GET.code|default:'' }}"
+                    placeholder="Например: 5942 или 260411..."
+                    required
+                    autocomplete="off"
+                >
+                <button type="submit" class="btn-find">Найти →</button>
+            </div>
         </form>
-        {% if error %}<p style="color: red; margin-top: 1rem;">{{ error }}</p>{% endif %}
+
+        {% if error %}
+        <div class="error-msg">❌ {{ error }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- RESULTS -->
+{% if shipments %}
+<div class="results-area">
+    <div class="results-header">
+        <div class="results-title">📦 История отправок</div>
+        <div class="client-badge">
+            <div class="client-avatar">{{ client.first_name|first }}</div>
+            <span>{{ client.first_name }} {{ client.last_name }}</span>
+            <span style="color:var(--muted);">· #{{ client.client_code }}</span>
+        </div>
     </div>
 
-    {% if shipments %}
-        <div style="margin-bottom: 2rem;">
-            <h2>История ваших отправок</h2>
-            <p>Клиент: <strong>{{ client.first_name }} {{ client.last_name }}</strong> (Код: {{ client.client_code }})</p>
+    {% for shipment in shipments %}
+    {% with colors="top-orange top-teal top-purple top-yellow" %}
+    <div class="s-card" style="animation-delay: {{ forloop.counter0 }}00ms">
+        <div class="s-card-top {% cycle 'top-orange' 'top-teal' 'top-purple' 'top-yellow' %}"></div>
+
+        <div class="s-card-body">
+            <div>
+                <div class="s-card-id">Заказ №{{ shipment.id }}</div>
+                <div class="s-card-waybill">🏷 {{ shipment.waybill_number }}</div>
+            </div>
+            <span class="s-pill
+                {% if shipment.status == 'sent' %}pill-sent
+                {% elif shipment.status == 'in_transit' %}pill-transit
+                {% elif shipment.status == 'received' %}pill-received
+                {% else %}pill-issued{% endif %}
+            ">{{ shipment.get_status_display }}</span>
         </div>
 
-        {% for shipment in shipments %}
-            <div class="shipment-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <div>
-                        <h3>Заказ №{{ shipment.id }}</h3>
-                        <div style="font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem;">Накладная: <strong>{{ shipment.waybill_number }}</strong></div>
-                    </div>
-                    <span class="status-badge status-{{ shipment.status }}">{{ shipment.get_status_display }}</span>
-                </div>
-                <div class="dashboard-grid">
-                    <div>
-                        <span class="label">Вес</span>
-                        <div class="value">{{ shipment.weight }} кг</div>
-                    </div>
-                    <div>
-                        <span class="label">Стоимость за кг</span>
-                        <div class="value">{{ shipment.price_per_kg }} сом</div>
-                    </div>
-                    <div>
-                        <span class="label">Итого</span>
-                        <div class="value">{{ shipment.total_price }} сом</div>
-                    </div>
-                    <div>
-                        <span class="label">Дата</span>
-                        <div class="value">{{ shipment.shipping_date|date:"d.m.Y" }}</div>
-                    </div>
-                </div>
-                {% if shipment.notes %}
-                <div style="margin-top: 1rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; color: var(--muted);">
-                    <strong>Примечание:</strong> {{ shipment.notes }}
-                </div>
-                {% endif %}
-                <div style="margin-top: 1rem; text-align: right;">
-                    <a href="{% url 'shipment_print' shipment.id %}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">Скачать накладной лист →</a>
-                </div>
+        <div class="s-card-stats">
+            <div class="stat-cell">
+                <div class="stat-lbl">⚖️ Вес</div>
+                <div class="stat-val">{{ shipment.weight }} кг</div>
             </div>
-        {% endfor %}
-    {% elif request.GET.code %}
-        <div style="text-align: center; margin-top: 2rem;">
-            <p>По коду "{{ request.GET.code }}" отправки не найдены.</p>
+            <div class="stat-cell">
+                <div class="stat-lbl">💰 За кг</div>
+                <div class="stat-val">{{ shipment.price_per_kg }} сом</div>
+            </div>
+            <div class="stat-cell">
+                <div class="stat-lbl">🧾 Итого</div>
+                <div class="stat-val big">{{ shipment.total_price }} сом</div>
+            </div>
         </div>
-    {% endif %}
+
+        {% if shipment.notes %}
+        <div class="s-card-notes">💬 {{ shipment.notes }}</div>
+        {% endif %}
+
+        <div class="s-card-footer">
+            <div class="s-card-date">📅 {{ shipment.shipping_date|date:"d.m.Y" }}</div>
+            <a href="{% url 'shipment_print' shipment.id %}" target="_blank" class="btn-waybill">
+                🖨 Накладной лист
+            </a>
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
 </div>
+
+{% elif request.GET.code %}
+<div class="results-area">
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">Ничего не найдено</div>
+        <div class="empty-text">По коду «{{ request.GET.code }}» отправки не найдены. Проверьте правильность кода.</div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

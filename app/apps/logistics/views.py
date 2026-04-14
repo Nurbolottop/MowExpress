@@ -35,5 +35,15 @@ def tracking_view(request):
 
 def shipment_print_view(request, pk):
     """Печатная форма (Накладной лист)"""
-    shipment = get_object_or_404(Shipment, pk=pk)
-    return render(request, 'logistics/shipment_print.html', {'shipment': shipment})
+    shipment = get_object_or_404(
+        Shipment.objects.prefetch_related('items', 'expenses').select_related('client'),
+        pk=pk
+    )
+    from apps.base.models import SiteSettings
+    settings = SiteSettings.load()
+    tracking_url = request.build_absolute_uri(f'/tracking/?code={shipment.waybill_number}')
+    return render(request, 'logistics/shipment_print.html', {
+        'shipment': shipment,
+        'settings': settings,
+        'tracking_url': tracking_url,
+    })
